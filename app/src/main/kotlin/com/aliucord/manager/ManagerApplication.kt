@@ -20,6 +20,8 @@ import com.aliucord.manager.ui.screens.patchopts.PatchOptionsModel
 import com.aliucord.manager.ui.screens.plugins.PluginsModel
 import com.aliucord.manager.ui.screens.settings.SettingsModel
 import com.aliucord.manager.ui.widgets.updater.UpdaterViewModel
+import com.aliucord.manager.installers.root.RootInstaller
+import com.aliucord.manager.installers.shizuku.ShizukuInstaller
 import kotlinx.coroutines.Dispatchers
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
@@ -54,11 +56,11 @@ class ManagerApplication : Application() {
 
             // UI Models
             modules(module {
-                factoryOf(::HomeModel)
+                factory { HomeModel(get<Application>(), get<AliucordGithubService>(), get<AliucordMavenService>(), get<ShiggyGithubService>(), get<RNATrackerService>(), get<kotlinx.serialization.json.Json>(), get<com.aliucord.manager.manager.PreferencesManager>()) }
                 factoryOf(::PluginsModel)
                 factoryOf(::AboutModel)
                 factoryOf(::PatchingScreenModel)
-                factoryOf(::SettingsModel)
+                factory { SettingsModel(get<Application>(), get<PathManager>(), get<PreferencesManager>(), get<InstallerManager>()) }
                 factoryOf(::PatchOptionsModel)
                 factoryOf(::IconOptionsModel)
                 factoryOf(::LogScreenModel)
@@ -80,7 +82,9 @@ class ManagerApplication : Application() {
 
             // Installers
             modules(module {
-                singleOf(::PMInstaller)
+                single { PMInstaller(get()) }
+                single { RootInstaller() }
+                singleOf(::ShizukuInstaller)
             })
         }
 

@@ -35,6 +35,7 @@ private fun HomeScreenLoadedPreview(
                 onOpenApp = {},
                 onOpenAppInfo = {},
                 onOpenPlugins = {},
+                onUninstall = {},
             )
         }
     }

@@ -2,7 +2,7 @@
   <string name="app_name">Shiggy Manager</string>
   <string name="app_description">A Discord mod built with simplicity and a seamless experience in mind.</string>
 
-  <string name="aliucord" translatable="false">ShiggyCord</string>
+  <string name="aliucord" translatable="false">Aliucord</string>
   <string name="discord" translatable="false">Discord</string>
   <string name="github" translatable="false">GitHub</string>
   <string name="support_server">Support Server</string>
@@ -53,6 +53,8 @@
   <string name="setting_theme_desc">The theme to apply to this app</string>
   <string name="setting_dynamic_color">Dynamic color</string>
   <string name="setting_dynamic_color_desc">Enables Material You theming on Android 12+</string>
+  <string name="setting_installer">Installer</string>
+  <string name="setting_installer_desc">The method to use for installing Shiggy</string>
   <string name="setting_developer_options">Developer options</string>
   <string name="setting_developer_options_desc">Don\'t enable this unless you know what it does! (yes, really)</string>
   <string name="setting_keep_patched_apks">Keep patched APKs</string>
@@ -255,7 +257,8 @@
   <string name="log_section_error">Error Stacktrace</string>
   <string name="log_section_log">Installation Log</string>
   <string name="log_action_export">Export log</string>
-  <string name="log_action_export_apk">Export APK</string>
+  <string name="log_action_export_apk">Export Patched APK</string>
+  <string name="settings_share_custom_apk">Share Custom APK</string>
   <string name="log_action_share">Share log</string>
 
   <string name="logs_title">Logs</string>
@@ -282,6 +285,8 @@
 
   <string name="custom_component_picker_title">Custom Component</string>
   <string name="custom_component_picker_desc">A custom local version for a patching component (%s) has been found. Would you like to use it?</string>
+
+  <string name="permissions_shizuku_denied">Failed to obtain Shizuku permissions</string>
 
   <string name="fun_fact_prefix">Fun Fact: %s</string>
   <string name="fun_fact_1">ShiggyCord on first release was meant to be custom Kettu build!</string>

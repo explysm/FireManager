@@ -53,7 +53,7 @@ APK output: `app/build/outputs/apk/debug/app-debug.apk`.
 You can fully tailor the appearance:
 
 - App name: edit `app/src/main/res/values/strings.xml` — ensure the UI uses `@string/app_name`.
-- Icons: swap `app/src/main/res/drawable/ic_rounded_shiggy.xml` and `ic_discord_shiggy.xml` with your vector or PNG.
+- Icons: swap `app/src/main/res/drawable/ic_rounded_shiggy.xml` and `app/src/main/res/drawable/ic_discord_aliucord.xml` with your vector or PNG.
 - Colors: use `colors.xml` to apply a new palette.
 - Glyph sizing: vector drawables support `<group android:scaleX="" android:scaleY="" android:translateX="" android:translateY="">`. To center an element after scaling, compute translation as:
 

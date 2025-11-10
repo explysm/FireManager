@@ -1,11 +1,13 @@
 package com.aliucord.manager.ui.screens.settings
 
 import android.app.Application
+import android.net.Uri
 import androidx.compose.runtime.*
 import cafe.adriel.voyager.core.model.ScreenModel
 import cafe.adriel.voyager.core.model.screenModelScope
 import com.aliucord.manager.manager.PathManager
 import com.aliucord.manager.manager.PreferencesManager
+import com.aliucord.manager.manager.InstallerManager
 import com.aliucord.manager.ui.theme.Theme
 import com.aliucord.manager.util.*
 import dev.shiggy.manager.BuildConfig
@@ -15,14 +17,18 @@ class SettingsModel(
     private val application: Application,
     private val paths: PathManager,
     val preferences: PreferencesManager,
+    private val installerManager: InstallerManager,
 ) : ScreenModel {
     val installInfo = InstallInfo
+
 
     var patchedApkExists by mutableStateOf(paths.patchedApk().exists())
         private set
 
     var showThemeDialog by mutableStateOf(false)
         private set
+
+    val availableInstallers = installerManager.getAvailableInstallers()
 
     fun showThemeDialog() {
         showThemeDialog = true
@@ -34,6 +40,10 @@ class SettingsModel(
 
     fun setTheme(theme: Theme) {
         preferences.theme = theme
+    }
+
+    fun setInstaller(installer: com.aliucord.manager.manager.InstallerSetting) {
+        preferences.installer = installer
     }
 
     fun setKeepPatchedApks(value: Boolean) {
@@ -54,35 +64,37 @@ class SettingsModel(
         application.showToast(R.string.action_copied)
     }
 
-    fun shareApk() {
-        // TODO(Shiggy): Implement this
-        application.showToast(R.string.settings_export_apk_not_implemented)
-        // val file = paths.patchingWorkingDir().resolve("patched.apk")
-        // val fileUri = FileProvider.getUriForFile(
-        //     /* context = */ application,
-        //     /* authority = */ "${BuildConfig.APPLICATION_ID}.provider",
-        //     /* file = */ file,
-        //     /* displayName = */ "Aliucord.apk",
-        // )
-        //
-        // val intent = Intent(Intent.ACTION_SEND)
-        //     .setType("application/vnd.android.package-archive")
-        //     .putExtra(Intent.EXTRA_STREAM, fileUri)
-        //     .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-        //     .let {
-        //         Intent.createChooser(
-        //             /* target = */ it,
-        //             /* title = */ application.getString(R.string.log_action_export_apk),
-        //         )
-        //     }
-        //     .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        //
-        // try {
-        //     application.startActivity(intent)
-        // } catch (t: Throwable) {
-        //     Log.w(BuildConfig.TAG, "Failed to share APK", t)
-        //     application.showToast(R.string.status_failed)
-        // }
+    fun shareApk(uriToShare: android.net.Uri? = null) {
+        val fileUri = uriToShare ?: run {
+            val file = paths.patchedApk()
+            if (!file.exists()) {
+                application.showToast(R.string.settings_export_apk_not_implemented)
+                return
+            }
+            try {
+                androidx.core.content.FileProvider.getUriForFile(
+                    application,
+                    "${BuildConfig.APPLICATION_ID}.provider",
+                    file
+                )
+            } catch (t: Throwable) {
+                application.showToast(R.string.status_failed)
+                return
+            }
+        }
+
+        val intent = android.content.Intent(android.content.Intent.ACTION_SEND)
+            .setType("application/vnd.android.package-archive")
+            .putExtra(android.content.Intent.EXTRA_STREAM, fileUri)
+            .addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            .addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+
+        try {
+            application.startActivity(intent)
+        } catch (t: Throwable) {
+            android.util.Log.w(BuildConfig.TAG, "Failed to share APK", t)
+            application.showToast(R.string.status_failed)
+        }
     }
 
     companion object {

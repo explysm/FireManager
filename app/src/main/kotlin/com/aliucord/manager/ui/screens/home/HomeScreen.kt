@@ -49,6 +49,12 @@ class HomeScreen : Screen, Parcelable {
         val scope = rememberCoroutineScope()
         val model = koinScreenModel<HomeModel>()
 
+        if (model.showRootDetectedDialog) {
+            com.aliucord.manager.ui.screens.settings.components.RootDetectedDialog(
+                onDismissRequest = { model.showRootDetectedDialog = false }
+            )
+        }
+
         // Refresh installations list when the screen changes or activity resumes
         LifecycleResumeEffect(Unit) {
             model.refresh(delay = true)
@@ -73,6 +79,7 @@ class HomeScreen : Screen, Parcelable {
                     onOpenApp = model::openApp,
                     onOpenAppInfo = model::openAppInfo,
                     onOpenPlugins = { navigator.push(PluginsScreen()) }, // TODO: install-specific plugins
+                    onUninstall = model::uninstallApp,
                 )
 
                 InstallsState.Fetching -> HomeScreenLoadingContent(padding = padding)
@@ -123,6 +130,7 @@ fun HomeScreenLoadedContent(
     onOpenApp: (packageName: String) -> Unit,
     onOpenAppInfo: (packageName: String) -> Unit,
     onOpenPlugins: (packageName: String) -> Unit,
+    onUninstall: (packageName: String) -> Unit,
 ) {
     LazyColumn(
         verticalArrangement = Arrangement.spacedBy(10.dp),
@@ -156,6 +164,7 @@ fun HomeScreenLoadedContent(
                 onOpenApp = { onOpenApp(item.packageName) },
                 onOpenInfo = { onOpenAppInfo(item.packageName) },
                 onOpenPlugins = { onOpenPlugins(item.packageName) },
+                onUninstall = { onUninstall(item.packageName) },
                 modifier = Modifier.fillMaxWidth()
             )
         }

@@ -20,13 +20,22 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
+import com.aliucord.manager.manager.InstallerManager
 import com.aliucord.manager.ui.components.BackButton
 import com.aliucord.manager.ui.components.MainActionButton
 import com.aliucord.manager.ui.components.settings.*
 import com.aliucord.manager.ui.screens.settings.components.ThemeDialog
+import com.aliucord.manager.ui.screens.settings.components.InstallerDialog
+import com.aliucord.manager.ui.screens.settings.components.ShizukuInfoDialog
+import com.aliucord.manager.manager.InstallerSetting
+import com.aliucord.manager.manager.toDisplayName
 import dev.shiggy.manager.R
 import kotlinx.parcelize.IgnoredOnParcel
 import kotlinx.parcelize.Parcelize
+import android.content.pm.PackageManager
+import rikka.shizuku.Shizuku
+import androidx.compose.ui.platform.LocalContext
+
 
 @Parcelize
 class SettingsScreen : Screen, Parcelable {
@@ -37,6 +46,7 @@ class SettingsScreen : Screen, Parcelable {
     override fun Content() {
         val model = koinScreenModel<SettingsModel>()
         var clearedCache by rememberSaveable { mutableStateOf(false) }
+
 
         Scaffold(
             topBar = {
@@ -70,9 +80,23 @@ class SettingsScreen : Screen, Parcelable {
                     secondaryText = { Text(stringResource(R.string.setting_theme_desc)) }
                 ) {
                     FilledTonalButton(onClick = model::showThemeDialog) {
+                        Icon(
+                            painter = painterResource(
+                                when (preferences.theme) {
+                                    com.aliucord.manager.ui.theme.Theme.Dark -> R.drawable.ic_night
+                                    com.aliucord.manager.ui.theme.Theme.Light -> R.drawable.ic_light
+                                    com.aliucord.manager.ui.theme.Theme.System -> R.drawable.ic_sync
+                                }
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 4.dp)
+                                .size(18.dp),
+                        )
                         Text(preferences.theme.toDisplayName())
                     }
                 }
+
 
                 // Material You theming on Android 12+
                 if (Build.VERSION.SDK_INT >= 31) {
@@ -86,6 +110,85 @@ class SettingsScreen : Screen, Parcelable {
                 }
 
                 SettingsHeader(stringResource(R.string.settings_header_advanced))
+
+                var showInstallerDialog by remember { mutableStateOf(false) }
+                var showShizukuInfoDialog by remember { mutableStateOf(false) }
+                var shouldRequestShizuku by remember { mutableStateOf(false) }
+                val context = LocalContext.current
+
+                if (shouldRequestShizuku) {
+                    LaunchedEffect(shouldRequestShizuku) {
+                        val SHIZUKU_REQUEST_CODE = 1001
+                        try {
+                            rikka.shizuku.Shizuku.requestPermission(SHIZUKU_REQUEST_CODE)
+                            kotlinx.coroutines.delay(800)
+                            if (rikka.shizuku.Shizuku.checkSelfPermission() != 0) {
+                                showShizukuInfoDialog = true
+                            }
+                        } catch (_: Exception) {
+                            showShizukuInfoDialog = true
+                        }
+                        shouldRequestShizuku = false
+                    }
+                }
+
+                if (showInstallerDialog) {
+                    InstallerDialog(
+                        currentInstaller = preferences.installer,
+                        onDismissRequest = { showInstallerDialog = false },
+                        onConfirm = { installer ->
+                            model.setInstaller(installer)
+                            if (installer == InstallerSetting.Shizuku) {
+                                shouldRequestShizuku = true
+                            }
+                        }
+                    )
+                }
+                if (showShizukuInfoDialog) {
+                    ShizukuInfoDialog(onDismissRequest = { showShizukuInfoDialog = false })
+                }
+
+                SettingsItem(
+                    modifier = Modifier.clickable { showInstallerDialog = true },
+                    icon = { Icon(painterResource(R.drawable.ic_tools), null) },
+                    text = { Text(stringResource(R.string.setting_installer)) },
+                    secondaryText = { Text(stringResource(R.string.setting_installer_desc)) }
+                ) {
+                    FilledTonalButton(onClick = { showInstallerDialog = true }) {
+                        Icon(
+                            painter = painterResource(
+                                when (preferences.installer) {
+                                    InstallerSetting.PM -> R.drawable.ic_app_shortcut
+                                    InstallerSetting.ROOT -> R.drawable.ic_code
+                                    InstallerSetting.Shizuku -> R.drawable.ic_tools
+                                }
+                            ),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .padding(end = 4.dp)
+                                .size(18.dp),
+                        )
+                        Text(preferences.installer.toDisplayName())
+                    }
+                }
+
+                MainActionButton(
+                    text = stringResource(R.string.settings_clear_cache),
+                    icon = painterResource(R.drawable.ic_delete_forever),
+                    enabled = !clearedCache,
+                    colors = IconButtonDefaults.filledTonalIconButtonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                    ),
+                    onClick = {
+                        clearedCache = true
+                        model.clearCache()
+                    },
+                    modifier = Modifier
+                        .padding(horizontal = 18.dp, vertical = 10.dp)
+                        .fillMaxWidth()
+                )
+
+                SettingsHeader("Development")
 
                 SettingsSwitch(
                     label = stringResource(R.string.setting_developer_options),
@@ -115,22 +218,6 @@ class SettingsScreen : Screen, Parcelable {
                             .fillMaxWidth()
                     )
                 }
-
-                MainActionButton(
-                    text = stringResource(R.string.settings_clear_cache),
-                    icon = painterResource(R.drawable.ic_delete_forever),
-                    enabled = !clearedCache,
-                    colors = IconButtonDefaults.filledTonalIconButtonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                    ),
-                    onClick = {
-                        clearedCache = true
-                        model.clearCache()
-                    },
-                    modifier = Modifier
-                        .padding(horizontal = 18.dp, vertical = 10.dp)
-                        .fillMaxWidth()
-                )
 
                 SettingsHeader(stringResource(R.string.settings_header_info))
 

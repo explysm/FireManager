@@ -6,6 +6,7 @@ pluginManagement {
     repositories {
         google()
         mavenCentral()
+        maven { url = uri("https://maven.rikka.app/releases") }
     }
 }
 
@@ -16,6 +17,10 @@ dependencyResolutionManagement {
         maven {
             name = "aliucord"
             url = uri("https://maven.aliucord.com/snapshots")
+        }
+        maven {
+            name = "jitpack"
+            url = uri("https://jitpack.io")
         }
     }
 }

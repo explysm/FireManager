@@ -39,10 +39,14 @@ class HomeModel(
     private val maven: AliucordMavenService,
     private val wtGithub: ShiggyGithubService,
     private val rnaTracker: RNATrackerService,
-    private val json: Json,
+    private val json: kotlinx.serialization.json.Json,
+    private val preferences: com.aliucord.manager.manager.PreferencesManager,
 ) : ScreenModel {
     var installsState by mutableStateOf<InstallsState>(InstallsState.Fetching)
         private set
+
+    var showRootDetectedDialog by mutableStateOf(false)
+    var rootDetected by mutableStateOf(false)
 
     private val refreshingLock = Mutex()
     private var remoteDataJson: BuildInfo? = null
@@ -52,6 +56,7 @@ class HomeModel(
 
     init {
         refresh()
+        checkAndSetRootInstaller()
     }
 
     fun refresh(delay: Boolean = false) = screenModelScope.launchIO {
@@ -80,6 +85,14 @@ class HomeModel(
             jobs.joinAll()
             mainThread { refreshInstallationsUpToDate(packages) }
         }
+    }
+
+    fun uninstallApp(packageName: String) {
+        val uninstallIntent = Intent(Intent.ACTION_DELETE).apply {
+            data = "package:$packageName".toUri()
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        }
+        application.startActivity(uninstallIntent)
     }
 
     fun openApp(packageName: String) {
@@ -216,10 +229,37 @@ class HomeModel(
                 )
             },
 
-        ).joinAll()
+            ).joinAll()
 
         if (trackerIndexJson == null /* remoteDataJson == null || latestAliuhookVersion == null */ || latestShiggyXposedVersion == null) {
             mainThread { application.showToast(R.string.home_network_fail) }
+        }
+    }
+
+    private fun isRootAvailable(): Boolean {
+        return try {
+            val process = ProcessBuilder("su", "-c", "echo rooted").start()
+            val output = process.inputStream.bufferedReader().readText().trim()
+            process.waitFor()
+            output == "rooted"
+        } catch (e: Exception) {
+            false
+        }
+    }
+
+    private fun checkAndSetRootInstaller() {
+        if (isRootAvailable() && !rootDetected) {
+            rootDetected = true
+            // Only show dialog and auto-switch if the popup hasn't been shown before
+            if (!preferences.rootPopupShown) {
+                showRootDetectedDialog = true
+                preferences.rootPopupShown = true
+                // Switch installer to ROOT only the first time
+                if (preferences.installer != com.aliucord.manager.manager.InstallerSetting.ROOT) {
+                    preferences.installer = com.aliucord.manager.manager.InstallerSetting.ROOT
+                }
+            }
+
         }
     }
 

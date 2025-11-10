@@ -9,6 +9,7 @@ plugins {
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.parcelize)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.hiddenApi.refine)
 }
 
 val isRelease = System.getenv("RELEASE")?.toBoolean() ?: false
@@ -186,12 +187,16 @@ dependencies {
     implementation(libs.binaryResources)
     implementation(libs.diff)
     implementation(libs.microg)
+    implementation(libs.bundles.shizuku)
     implementation(libs.smali)
     implementation(libs.baksmali)
     implementation(libs.compose.pipette)
     implementation(libs.compose.shimmer)
     implementation(libs.zip)
 
+    compileOnly(libs.hiddenApi.stub)
+    implementation(libs.hiddenApi.refine)
+    implementation(libs.hiddenApi.bypass)
     coreLibraryDesugaring(libs.desugaring)
 }
 

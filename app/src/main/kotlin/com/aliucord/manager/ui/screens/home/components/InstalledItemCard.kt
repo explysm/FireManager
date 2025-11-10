@@ -27,6 +27,7 @@ fun InstalledItemCard(
     onOpenApp: () -> Unit,
     onOpenInfo: () -> Unit,
     onOpenPlugins: () -> Unit,
+    onUninstall: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     ElevatedCard(
@@ -122,6 +123,13 @@ fun InstalledItemCard(
                     icon = painterResource(R.drawable.ic_launch),
                     text = stringResource(R.string.action_launch),
                     onClick = onOpenApp,
+                )
+                SegmentedButton(
+                    icon = painterResource(R.drawable.ic_delete_forever),
+                    text = stringResource(R.string.action_uninstall), // Assuming R.string.action_uninstall exists or will be added
+                    iconColor = MaterialTheme.colorScheme.error,
+                    textColor = MaterialTheme.colorScheme.error,
+                    onClick = onUninstall,
                 )
             }
         }

@@ -53,6 +53,10 @@ open class InstallStep(private val options: PatchOptions) : Step(), KoinComponen
         // Wait until app resumed
         ProcessLifecycleOwner.get().lifecycle.withResumed {}
 
+        // Retrieve configured installer
+        container.log("Retrieving configured installer ${prefs.installer}")
+        val installer = installers.getActiveInstaller()
+
         // Show [PlayProtectDialog] and wait until it gets dismissed
         if (prefs.showPlayProtectWarning
             && !prefs.devMode
@@ -67,7 +71,7 @@ open class InstallStep(private val options: PatchOptions) : Step(), KoinComponen
         }
 
         container.log("Installing ${apks.joinToString(", ") { it.name }}, silent: ${!prefs.devMode}")
-        val result = installers.getActiveInstaller().waitInstall(
+        val result = installer.waitInstall(
             apks = apks,
             silent = !prefs.devMode,
         )

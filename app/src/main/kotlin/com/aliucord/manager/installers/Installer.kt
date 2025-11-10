@@ -11,7 +11,7 @@ interface Installer {
      * @param apks All APKs (including any splits) to merge into a single install.
      * @param silent If this is an update, then the update will occur without user interaction.
      */
-    fun install(apks: List<File>, silent: Boolean = true)
+    suspend fun install(apks: List<File>, silent: Boolean = true)
 
     /**
      * Starts an installation and waits for it to finish with a result. A toast will be shown for all result states.
