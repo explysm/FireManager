@@ -158,7 +158,7 @@ class SettingsScreen : Screen, Parcelable {
                         Icon(
                             painter = painterResource(
                                 when (preferences.installer) {
-                                    InstallerSetting.PM -> R.drawable.ic_app_shortcut
+                                    InstallerSetting.PM -> R.drawable.ic_android
                                     InstallerSetting.ROOT -> R.drawable.ic_code
                                     InstallerSetting.Shizuku -> R.drawable.ic_tools
                                 }
