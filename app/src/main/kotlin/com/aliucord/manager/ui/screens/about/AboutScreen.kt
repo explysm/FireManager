@@ -10,6 +10,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -20,7 +21,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.koinScreenModel
 import com.aliucord.manager.ui.components.*
-import com.aliucord.manager.ui.screens.about.components.LeadContributor
+import com.aliucord.manager.ui.screens.about.components.ContributorListItem
 import com.aliucord.manager.ui.util.paddings.*
 import dev.shiggy.manager.R
 import kotlinx.parcelize.IgnoredOnParcel
@@ -41,105 +42,88 @@ class AboutScreen : Screen, Parcelable {
 @Composable
 fun AboutScreenContent(state: State<AboutScreenState>) {
     Scaffold(
-            topBar = {
-                TopAppBar(
-                        title = { Text(stringResource(R.string.navigation_about_manager)) },
-                        navigationIcon = { BackButton() },
-                )
-            }
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.navigation_about_manager)) },
+                navigationIcon = { BackButton() },
+            )
+        }
     ) { paddingValues ->
         LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                contentPadding =
-                        paddingValues
-                                .exclude(PaddingValuesSides.Horizontal + PaddingValuesSides.Top)
-                                .add(PaddingValues(vertical = 16.dp)),
-                modifier =
-                        Modifier.padding(paddingValues.exclude(PaddingValuesSides.Bottom))
-                                .padding(horizontal = 14.dp),
+            verticalArrangement = Arrangement.spacedBy(2.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = paddingValues
+                .exclude(PaddingValuesSides.Horizontal + PaddingValuesSides.Top)
+                .add(PaddingValues(vertical = 16.dp)),
+            modifier = Modifier
+                .padding(paddingValues.exclude(PaddingValuesSides.Bottom))
         ) {
             item(key = "MANAGER_CREDIT_DISCLAIMER_BANNER") {
                 Box(
-                        contentAlignment = Alignment.Center,
-                        modifier =
-                                Modifier.padding(bottom = 24.dp)
-                                        .border(
-                                                width = 2.dp,
-                                                color = MaterialTheme.colorScheme.surfaceVariant,
-                                                shape = MaterialTheme.shapes.medium
-                                        )
-                                        .clip(MaterialTheme.shapes.medium)
-                                        .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                ) {
-                    Row(
-                            horizontalArrangement = Arrangement.spacedBy(12.dp),
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.padding(horizontal = 20.dp, vertical = 14.dp)
-                    ) {
-                        Text(
-                                text =
-                                        stringResource(
-                                                R.string.about_manager_credit_disclaimer_notice
-                                        ),
-                                style = MaterialTheme.typography.labelMedium,
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                        .fillMaxWidth()
+                        .border(
+                            width = 1.dp,
+                            color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f),
+                            shape = MaterialTheme.shapes.large
                         )
+                        .clip(MaterialTheme.shapes.large)
+                        .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                ) {
+                    Text(
+                        text = stringResource(R.string.about_manager_credit_disclaimer_notice),
+                        style = MaterialTheme.typography.bodyMedium,
+                        modifier = Modifier.padding(horizontal = 20.dp, vertical = 16.dp)
+                    )
+                }
+            }
+
+            item(key = "PROJECT_HEADER") {
+                Box(modifier = Modifier.padding(horizontal = 16.dp)) {
+                    ProjectHeader()
+                }
+            }
+
+            item(key = "TEAM_SPACER") {
+                Spacer(modifier = Modifier.height(32.dp))
+            }
+
+            when (val currentState = state.value) {
+                AboutScreenState.Loading -> {
+                    item(key = "LOADING") {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 48.dp)
+                        ) {
+                            CircularProgressIndicator()
+                        }
                     }
                 }
-            }
-
-            item(key = "PROJECT_HEADER") { ProjectHeader() }
-
-            item(key = "HEADER_DIVIDER") {
-                TextDivider(
-                        text = stringResource(R.string.contributors_lead),
-                        modifier = Modifier.padding(top = 18.dp, bottom = 20.dp),
-                )
-            }
-
-            item(key = "MAIN_CONTRIBUTORS") {
-                Row(
-                        horizontalArrangement = Arrangement.SpaceEvenly,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth(),
-                ) {
-                    LeadContributor("C0C0B01", stringResource(R.string.lead_role_kettu))
-                    LeadContributor("kmmiio99o", stringResource(R.string.lead_role_shiggycord))
-                    LeadContributor("pylixonly", stringResource(R.string.lead_role_bunny))
-                }
-            }
-
-            item(key = "CONTRIBUTORS_DIVIDER") {
-                TextDivider(
-                        text = stringResource(R.string.contributors),
-                        modifier = Modifier.padding(top = 16.dp, bottom = 6.dp)
-                )
-            }
-
-            when (val state = state.value) {
-                AboutScreenState.Loading ->
-                        item(key = "CONTRIBUTIONS_LOADING") {
-                            Box(
-                                    contentAlignment = Alignment.Center,
-                                    content = { CircularProgressIndicator() },
-                                    modifier = Modifier.fillMaxWidth().padding(vertical = 38.dp),
-                            )
-                        }
-                AboutScreenState.Failure ->
-                        item(key = "LOAD_FAILURE") {
-                            LoadFailure(modifier = Modifier.fillMaxSize().padding(vertical = 38.dp))
-                        }
-                is AboutScreenState.Loaded -> {
-                    // Render the two requested contributors as LeadContributor entries
-                    item(key = "SELECTED_CONTRIBUTORS") {
-                        Row(
-                                horizontalArrangement = Arrangement.SpaceEvenly,
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier.fillMaxWidth(),
+                AboutScreenState.Failure -> {
+                    item(key = "LOAD_FAILURE") {
+                        Box(
+                            contentAlignment = Alignment.Center,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 48.dp)
                         ) {
-                            LeadContributor("maisymoe", "Creator - Vendetta")
-                            LeadContributor("rushiiMachine", "Manager - Creator")
+                            LoadFailure()
                         }
+                    }
+                }
+                is AboutScreenState.Loaded -> {
+                    itemsIndexed(
+                        items = currentState.contributors,
+                        key = { index, developer -> developer.username }
+                    ) { index, developer ->
+                        ContributorListItem(
+                            contributor = developer,
+                            isLast = index == currentState.contributors.lastIndex
+                        )
                     }
                 }
             }
