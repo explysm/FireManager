@@ -1,5 +1,11 @@
 <h1 align="center">Fire Manager</h1>
 
+# BIG RED NOTE:
+
+This project is 100% vibecoded by gemini while i learn TypeScript and React Native.
+
+Once i learn enough to be able to understand the codebase better, i will purge FireCord & remake it. 
+
 <p align="center">
   <a href="https://github.com/explysm/FireManager/releases"><img alt="Releases" src="https://img.shields.io/github/v/release/explysm/FireManager?style=flat-square"></a>
   <a href="https://github.com/explysm/FireManager/blob/main/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square"></a>
