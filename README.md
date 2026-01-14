@@ -86,6 +86,10 @@ Fire Manager is open source under the OSL License. See `LICENSE` for details.
 - Repo: https://github.com/explysm/FireManager
 - Issues & feature requests: https://github.com/explysm/FireManager/issues
 
+## ✏️ Known Issues
+- Package name is app.revenge.manager instead of app.fire.manager (not an issue but still something good to know)
+- Launcher icon is not Fire...
+
 ---
 
 <p align="center">
