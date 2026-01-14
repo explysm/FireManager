@@ -1,4 +1,4 @@
-name: Build & Release Signed APK
+name: Build and Release Signed APK
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-and-release:
-    name: Build Signed APK & Create GitHub Release
+    name: Build Signed APK and Create GitHub Release
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -31,23 +31,22 @@ jobs:
           path: |
             ~/.gradle/caches
             ~/.gradle/wrapper
-          key: \( {{ runner.os }}-gradle- \){{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: |
-            ${{ runner.os }}-gradle-
+          key: gradle-\( {{ runner.os }}- \){{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: gradle-${{ runner.os }}-
 
       - name: Make gradlew executable
         run: chmod +x ./gradlew
 
-      - name: Decode & Setup Keystore
+      - name: Decode and Setup Keystore
         run: |
           echo "${{ secrets.KEYSTORE }}" | base64 --decode > keystore.jks
 
       - name: Build Signed Release APK
         env:
-          keystore: keystore.jks                  # ← path to the decoded file
-          keystorePassword: ${{ secrets.KEYSTORE_PASSWORD }}
-          keyAlias: ${{ secrets.KEYSTORE_ENTRY_ALIAS }}
-          keyPassword: ${{ secrets.KEYSTORE_ENTRY_PASSWORD }}
+          keystore: keystore.jks
+          keystorePassword: ${{ secrets.keystorePassword }}
+          keyAlias: ${{ secrets.keyAlias }}
+          keyPassword: ${{ secrets.keyPassword }}
         run: ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload APK as Artifact
@@ -57,7 +56,7 @@ jobs:
           path: app/build/outputs/apk/release/app-release.apk
           if-no-files-found: error
 
-      - name: Create GitHub Release & Attach APK
+      - name: Create GitHub Release and Attach APK
         uses: softprops/action-gh-release@v2
         with:
           files: app/build/outputs/apk/release/app-release.apk
