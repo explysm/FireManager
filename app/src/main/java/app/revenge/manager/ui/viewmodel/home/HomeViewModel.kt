@@ -115,12 +115,12 @@ class HomeViewModel(
 
     private fun checkForUpdate() {
         screenModelScope.launch {
-            release = repo.getLatestRelease("revenge-mod/revenge-manager").dataOrNull
+            release = repo.getLatestRelease("explysm/firemanager").dataOrNull
             release?.let {
                 updateDownloadUrl = it.assets.firstOrNull { asset -> asset.name.endsWith(".apk") }?.browserDownloadUrl
                 showUpdateDialog = it.tagName.removePrefix("v") != BuildConfig.VERSION_NAME
             }
-            repo.getLatestRelease("revenge-mod/revenge-xposed").ifSuccessful {
+            repo.getLatestRelease("explysm/firexposed").ifSuccessful {
                 if (prefs.moduleVersion != it.tagName) {
                     prefs.moduleVersion = it.tagName
                     val module = File(cacheDir, "xposed.apk")

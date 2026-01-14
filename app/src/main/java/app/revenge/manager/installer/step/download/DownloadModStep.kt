@@ -8,7 +8,7 @@ import java.io.File
 /**
  * Downloads the Revenge XPosed module
  *
- * https://github.com/revenge-mod/revenge-xposed
+ * https://github.com/explysm/firexposed
  */
 @Stable
 class DownloadModStep(
