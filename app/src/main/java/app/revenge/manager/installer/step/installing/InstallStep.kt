@@ -14,6 +14,7 @@ import app.revenge.manager.installer.step.StepGroup
 import app.revenge.manager.installer.step.StepRunner
 import app.revenge.manager.utils.isMiui
 import app.revenge.manager.utils.showToast
+import com.github.diamondminer88.zip.ZipWriter
 import org.koin.core.component.inject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -45,8 +46,17 @@ class InstallStep(
 
         if (preferences.savePatchedApk) {
             val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            files.forEach { file ->
-                file.copyTo(downloadDir.resolve(file.name), overwrite = true)
+            val outputFile = downloadDir.resolve("FireCord.apks")
+            if (outputFile.exists()) outputFile.delete()
+            
+            ZipWriter(outputFile).use { zip ->
+                files.forEach { file ->
+                    zip.writeEntry(file.name, file.readBytes())
+                }
+            }
+            
+            withContext(Dispatchers.Main) {
+                context.applicationContext.showToast("Saved as ${outputFile.name}")
             }
         }
 
