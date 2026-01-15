@@ -23,6 +23,7 @@
     <string name="msg_download_failed">Download failed</string>
     <string name="msg_download_verify_failed">Could not verify downloaded file, check logs for more details</string>
     <string name="msg_copied">Copied to clipboard</string>
+    <string name="msg_saved">Saved as %1$s</string>
 
     <string name="group_download">Download APKs</string>
     <string name="group_patch">Patching</string>

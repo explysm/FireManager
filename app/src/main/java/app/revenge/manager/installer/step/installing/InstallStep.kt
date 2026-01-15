@@ -56,7 +56,7 @@ class InstallStep(
             }
             
             withContext(Dispatchers.Main) {
-                context.applicationContext.showToast("Saved as ${outputFile.name}")
+                context.applicationContext.showToast(R.string.msg_saved, outputFile.name)
             }
         }
 
