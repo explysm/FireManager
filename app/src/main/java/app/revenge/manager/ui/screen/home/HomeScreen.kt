@@ -87,7 +87,6 @@ import app.revenge.manager.utils.Constants
 import app.revenge.manager.utils.DiscordVersion
 import app.revenge.manager.utils.glow
 import app.revenge.manager.utils.navigate
-import app.revenge.manager.utils.VersionUtils
 import app.revenge.manager.utils.frosted
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel

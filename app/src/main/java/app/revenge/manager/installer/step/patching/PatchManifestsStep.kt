@@ -42,7 +42,7 @@ class PatchManifestsStep : Step() {
                     ManifestPatcher.patchManifest(
                         manifestBytes = manifest,
                         packageName = preferences.packageName,
-                        appName = preferences.appName,
+                        appName = app.revenge.manager.BuildConfig.MOD_NAME,
                         debuggable = preferences.debuggable,
                     )
                 } else {

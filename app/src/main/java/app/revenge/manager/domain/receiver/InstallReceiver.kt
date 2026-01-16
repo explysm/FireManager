@@ -26,7 +26,6 @@ class InstallReceiver : BroadcastReceiver(), KoinComponent {
                     // Or simply if it's a FireCord-like package
                     if (it == prefs.packageName || it.startsWith("app.fire.cord") || it.startsWith("dev.fire.cord")) {
                         prefs.installedInstances = prefs.installedInstances + it
-                        prefs.syncInstancesToFile()
                     }
                 }
             }
@@ -35,7 +34,6 @@ class InstallReceiver : BroadcastReceiver(), KoinComponent {
                     packageName?.let {
                         if (prefs.installedInstances.contains(it)) {
                             prefs.installedInstances = prefs.installedInstances - it
-                            prefs.syncInstancesToFile()
                         }
                     }
                 }

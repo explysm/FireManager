@@ -45,7 +45,7 @@ class ReplaceIconStep : Step() {
 
         val backgroundColor = arsc.getPackageChunk().addColorResource("brand", Color(BuildConfig.MODDED_APP_ICON))
 
-        val postfix = when (preferences.channel) {
+        val postfix = when (DiscordVersion.Type.STABLE) {
             DiscordVersion.Type.BETA -> "beta"
             DiscordVersion.Type.ALPHA -> "canary"
             else -> null
