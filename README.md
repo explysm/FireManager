@@ -22,8 +22,12 @@ Once i learn enough to be able to understand the codebase better, i will purge F
 
 Fire Manager makes installing and managing FireCord simple. The manager is built from the ground up by the Bunny team, while being forked from Revenge Manager.
 
-![screenshot 1 of the homescreen of fire manager](https://raw.githubusercontent.com/explysm/FireManager/refs/heads/main/assets/screenshot2-1.0.3.png)
-![screenshot 2 of homescreen of fire manager with experimental ui enabled](https://raw.githubusercontent.com/explysm/FireManager/refs/heads/main/assets/screenshot1-1.0.3.png)
+<div style="display: flex; justify-content: space-around;">
+  <img src="https://raw.githubusercontent.com/explysm/FireManager/refs/heads/main/assets/screenshot2-1.0.3.png" alt="Description 1" style="width: 150px; margin: 5px;">
+  <img src="https://raw.githubusercontent.com/explysm/FireManager/refs/heads/main/assets/screenshot1-1.0.3.png" alt="Description 2" style="width: 150px; margin: 5px;">
+</div>
+
+
 
 Second screenshot is with the "Experimental UI" toggle <strong>on</strong>
 ---
