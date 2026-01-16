@@ -13,12 +13,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.OpenInNew
@@ -27,6 +30,9 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -35,7 +41,6 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -201,53 +206,6 @@ class HomeScreen : Screen {
                         )
                     }
 
-                    if (prefs.installedInstances.size > 1) {
-                        item {
-                            val context = LocalContext.current
-                            LazyRow(
-                                horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                modifier = Modifier.fillMaxWidth()
-                            ) {
-                                items(prefs.installedInstances.toList()) { pkg ->
-                                    val isSelected = prefs.packageName == pkg
-                                    val label = remember(pkg) {
-                                        try {
-                                            context.packageManager.getApplicationLabel(
-                                                context.packageManager.getApplicationInfo(pkg, 0)
-                                            ).toString()
-                                        } catch (e: Exception) {
-                                            pkg.split(".").last()
-                                        }
-                                    }
-
-                                    ElevatedCard(
-                                        onClick = {
-                                            prefs.packageName = pkg
-                                            prefs.appName = label
-                                            prefs.discordVersion = prefs.getTargetVersion(pkg)
-                                            viewModel.installManager.getInstalled()
-                                        },
-                                        shape = RoundedCornerShape(24.dp),
-                                        colors = if (isSelected) CardDefaults.elevatedCardColors(
-                                            containerColor = MaterialTheme.colorScheme.primary
-                                        ) else CardDefaults.elevatedCardColors(),
-                                        elevation = CardDefaults.elevatedCardElevation(
-                                            defaultElevation = if (isSelected) 8.dp else 2.dp
-                                        )
-                                    ) {
-                                        Text(
-                                            text = label,
-                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                                            style = MaterialTheme.typography.labelLarge,
-                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
-                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
                     item {
                         Column(
                             horizontalAlignment = Alignment.CenterHorizontally,
@@ -382,16 +340,81 @@ class HomeScreen : Screen {
     @Composable
     @OptIn(ExperimentalMaterial3Api::class)
     private fun TitleBar() {
-        TopAppBar(
-            title = { 
-                Text(
-                    stringResource(R.string.title_home),
-                    fontWeight = FontWeight.Black,
-                    letterSpacing = (-1).sp
-                ) 
+        val prefs: PreferenceManager = get()
+        val viewModel: HomeViewModel = getScreenModel()
+        var expanded by remember { mutableStateOf(false) }
+        val context = LocalContext.current
+
+        CenterAlignedTopAppBar(
+            title = {
+                Box(modifier = Modifier.wrapContentSize(Alignment.Center)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(12.dp))
+                            .clickable { expanded = true }
+                            .padding(horizontal = 12.dp, vertical = 4.dp)
+                    ) {
+                        Text(
+                            text = prefs.appName,
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = (-1).sp,
+                            style = MaterialTheme.typography.titleLarge,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Icon(
+                            imageVector = Icons.Filled.ArrowDropDown,
+                            contentDescription = null,
+                            tint = FireOrange,
+                            modifier = Modifier.size(24.dp)
+                        )
+                    }
+
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier.background(MaterialTheme.colorScheme.surface)
+                    ) {
+                        prefs.installedInstances.toList().forEach { pkg ->
+                            val label = remember(pkg) {
+                                try {
+                                    context.packageManager.getApplicationLabel(
+                                        context.packageManager.getApplicationInfo(pkg, 0)
+                                    ).toString()
+                                } catch (e: Exception) {
+                                    pkg.split(".").last()
+                                }
+                            }
+                            DropdownMenuItem(
+                                text = { 
+                                    Text(
+                                        text = label,
+                                        fontWeight = if (prefs.packageName == pkg) FontWeight.Bold else FontWeight.Normal
+                                    ) 
+                                },
+                                onClick = {
+                                    expanded = false
+                                    prefs.packageName = pkg
+                                    prefs.appName = label
+                                    prefs.discordVersion = prefs.getTargetVersion(pkg)
+                                    viewModel.installManager.getInstalled()
+                                },
+                                leadingIcon = {
+                                    if (prefs.packageName == pkg) {
+                                        Icon(
+                                            imageVector = Icons.Filled.Check,
+                                            contentDescription = null,
+                                            tint = FireOrange
+                                        )
+                                    }
+                                }
+                            )
+                        }
+                    }
+                }
             },
             actions = { Actions() },
-            colors = TopAppBarDefaults.topAppBarColors(
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                 containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
             ),
             modifier = Modifier.background(
