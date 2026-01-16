@@ -1,7 +1,7 @@
 [versions]
 # Plugins
 agp = "8.6.0"
-kotlin = "2.0.20"
+kotlin = "2.1.0"
 
 # AndroidX
 androidx-core-ktx = "1.13.1"
@@ -12,7 +12,7 @@ androidx-work-runtime = "2.9.1"
 
 # Compose
 compose-activity = "1.9.2"
-compose-bom = "2024.09.03"
+compose-bom = "2025.01.00"
 
 # Misc.
 aboutlibraries = "11.1.3"
@@ -48,11 +48,13 @@ coil-compose = { group = "io.coil-kt", name = "coil-compose", version.ref = "coi
 # Compose
 compose-activity = { group = "androidx.activity", name = "activity-compose", version.ref = "compose-activity" }
 compose-bom = { group = "androidx.compose", name = "compose-bom", version.ref = "compose-bom" }
+compose-foundation = { group = "androidx.compose.foundation", name = "foundation" }
 compose-material3 = { group = "androidx.compose.material3", name = "material3" }
 compose-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended" }
 compose-ui = { group = "androidx.compose.ui", name = "ui" }
 compose-ui-graphics = { group = "androidx.compose.ui", name = "ui-graphics" }
 compose-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-tooling-preview" }
+compose-ui-util = { group = "androidx.compose.ui", name = "ui-util" }
 
 # Koin
 koin-android = { group = "io.insert-koin", name = "koin-android", version.ref = "koin" }
@@ -88,7 +90,7 @@ zip-android = { group = "io.github.diamondminer88", name = "zip-android", versio
 accompanist = ["accompanist-pager", "accompanist-permissions", "accompanist-systemuicontroller"]
 androidx = ["androidx-work-runtime", "androidx-paging-compose", "androidx-lifecycle-runtime", "androidx-core-splashscreen", "androidx-core-ktx"]
 coil = ["coil", "coil-compose"]
-compose = ["compose-activity", "compose-material-icons-extended", "compose-material3", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview"]
+compose = ["compose-activity", "compose-material-icons-extended", "compose-material3", "compose-ui", "compose-ui-graphics", "compose-ui-tooling-preview", "compose-foundation", "compose-ui-util"]
 koin = ["koin-android", "koin-androidx-compose", "koin-core"]
 ktor = ["ktor-client-cio", "ktor-client-content-negotiation", "ktor-client-core", "ktor-client-logging", "ktor-serialization-kotlinx-json"]
 shizuku = ["shizuku-api", "shizuku-provider"]
