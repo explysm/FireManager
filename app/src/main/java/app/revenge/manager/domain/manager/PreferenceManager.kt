@@ -1,7 +1,6 @@
 package app.revenge.manager.domain.manager
 
 import android.content.Context
-import android.os.Build
 import android.os.Environment
 import androidx.annotation.StringRes
 import app.revenge.manager.BuildConfig
@@ -19,8 +18,6 @@ class PreferenceManager(private val context: Context) :
             BuildConfig.MANAGER_NAME).also { it.mkdirs() }).resolve("xposed.apk")
 
     var packageName by stringPreference("package_name", BuildConfig.MODDED_APP_PACKAGE_NAME)
-
-    var appName by stringPreference("app_name", BuildConfig.MOD_NAME)
 
     var discordVersion by stringPreference("discord_version", "")
 
@@ -40,8 +37,6 @@ class PreferenceManager(private val context: Context) :
 
     var theme by enumPreference("theme", Theme.SYSTEM)
 
-    var channel by enumPreference("channel", DiscordVersion.Type.STABLE)
-
     var updateDuration by enumPreference("update_duration", UpdateCheckerDuration.HOURLY)
 
     var moduleLocation by filePreference("module_location", DEFAULT_MODULE_LOCATION)
@@ -58,6 +53,8 @@ class PreferenceManager(private val context: Context) :
 
     var experimentalUi by booleanPreference("experimental_ui", false)
 
+    var frostedGlass by booleanPreference("frosted_glass", false)
+
     var installedInstances by stringSetPreference("installed_instances", setOf(BuildConfig.MODDED_APP_PACKAGE_NAME))
 
     var hasAskedForBatteryOpt by booleanPreference("has_asked_for_battery_opt", false)
@@ -69,52 +66,10 @@ class PreferenceManager(private val context: Context) :
         putString("target_version_$packageName", version)
     }
 
-    fun syncInstancesToFile() {
-        try {
-            val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val configDir = downloadDir.resolve("FireCord")
-            configDir.mkdirs()
-            val configFile = configDir.resolve("config")
-            configFile.writeText(installedInstances.joinToString("\n"))
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    fun readInstancesFromFile() {
-        try {
-            val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            val configFile = downloadDir.resolve("FireCord/config")
-            if (!configFile.exists()) return
-
-            val lines = configFile.readLines()
-                .map { it.trim() }
-                .filter { it.isNotBlank() }
-
-            val pm = context.packageManager
-            val validInstances = lines.filter { pkg ->
-                try {
-                    pm.getPackageInfo(pkg, 0)
-                    true
-                } catch (e: Exception) {
-                    false
-                }
-            }.toSet()
-
-            if (validInstances.isNotEmpty()) {
-                installedInstances = installedInstances + validInstances
-            }
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
     init {
         if (mirror !in Mirror.entries) {
             mirror = Mirror.DEFAULT
         }
-
-        readInstancesFromFile()
 
         val pm = context.packageManager
         installedInstances = (installedInstances + BuildConfig.MODDED_APP_PACKAGE_NAME).filter { pkg ->
@@ -125,8 +80,6 @@ class PreferenceManager(private val context: Context) :
                 false
             }
         }.toSet()
-        
-        syncInstancesToFile()
     }
 }
 

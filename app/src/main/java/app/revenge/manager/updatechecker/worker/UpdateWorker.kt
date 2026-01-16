@@ -29,7 +29,7 @@ class UpdateWorker(
             is ApiResponse.Success -> {
                 val currentVersion =
                     DiscordVersion.fromVersionCode(installManager.current?.versionCode.toString())
-                val latestVersion = res.data[prefs.channel]
+                val latestVersion = res.data[DiscordVersion.Type.STABLE]
 
                 if (latestVersion == null || currentVersion == null) return Result.failure()
 

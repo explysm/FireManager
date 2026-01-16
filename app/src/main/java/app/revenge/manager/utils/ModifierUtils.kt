@@ -2,6 +2,7 @@ package app.revenge.manager.utils
 
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
+import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -13,6 +14,8 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import app.revenge.manager.domain.manager.PreferenceManager
+import org.koin.androidx.compose.get
 
 fun Modifier.glow(
     color: Color,
@@ -48,3 +51,21 @@ fun Modifier.contentDescription(res: Int, vararg param: Any, merge: Boolean = fa
 
 inline fun Modifier.thenIf(predicate: Boolean, block: Modifier.() -> Modifier): Modifier =
     if (predicate) then(Modifier.Companion.block()) else this
+
+fun Modifier.frosted(
+    radius: Dp = 16.dp,
+    alpha: Float = 0.3f
+) = composed {
+    val prefs: PreferenceManager = get()
+    if (prefs.frostedGlass) {
+        this.then(
+            Modifier
+                .blur(radius)
+                .drawBehind {
+                    drawRect(Color.White.copy(alpha = alpha))
+                }
+        )
+    } else {
+        this
+    }
+}

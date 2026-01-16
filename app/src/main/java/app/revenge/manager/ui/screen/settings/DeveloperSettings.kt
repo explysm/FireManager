@@ -33,7 +33,6 @@ import app.revenge.manager.ui.components.settings.SettingsButton
 import app.revenge.manager.ui.components.settings.SettingsSwitch
 import app.revenge.manager.ui.components.settings.SettingsTextField
 import app.revenge.manager.utils.DimenUtils
-import app.revenge.manager.utils.DiscordVersion
 import org.koin.androidx.compose.get
 import java.io.File
 
@@ -91,13 +90,6 @@ class DeveloperSettings: Screen {
                     label = stringResource(R.string.settings_module_location_reset),
                     onClick = {
                         prefs.moduleLocation = prefs.DEFAULT_MODULE_LOCATION
-                    }
-                )
-
-                SettingsButton(
-                    label = stringResource(R.string.settings_read_from_config),
-                    onClick = {
-                        prefs.readInstancesFromFile()
                     }
                 )
 

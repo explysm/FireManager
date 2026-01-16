@@ -65,6 +65,24 @@ class AppearanceSettings: Screen {
                     },
                     disabled = Build.VERSION.SDK_INT < Build.VERSION_CODES.S
                 )
+
+                SettingsSwitch(
+                    label = stringResource(R.string.settings_experimental_ui),
+                    secondaryLabel = stringResource(R.string.settings_experimental_ui_description),
+                    pref = prefs.experimentalUi,
+                    onPrefChange = {
+                        prefs.experimentalUi = it
+                    }
+                )
+
+                SettingsSwitch(
+                    label = stringResource(R.string.settings_frosted_glass),
+                    secondaryLabel = stringResource(R.string.settings_frosted_glass_description),
+                    pref = prefs.frostedGlass,
+                    onPrefChange = {
+                        prefs.frostedGlass = it
+                    }
+                )
             }
         }
     }

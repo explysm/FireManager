@@ -18,16 +18,13 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import app.revenge.manager.R
 import app.revenge.manager.domain.manager.PreferenceManager
-import app.revenge.manager.ui.components.settings.SettingsItemChoice
 import app.revenge.manager.ui.components.settings.SettingsSwitch
-import app.revenge.manager.ui.components.settings.SettingsTextField
 import app.revenge.manager.utils.DimenUtils
 import org.koin.androidx.compose.get
 
@@ -36,7 +33,6 @@ class CustomizationSettings: Screen {
     @Composable
     @OptIn(ExperimentalMaterial3Api::class)
     override fun Content() {
-        val ctx = LocalContext.current
         val prefs: PreferenceManager = get()
         val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
@@ -51,40 +47,12 @@ class CustomizationSettings: Screen {
                     .verticalScroll(rememberScrollState())
                     .padding(bottom = DimenUtils.navBarPadding)
             ) {
-                SettingsTextField(
-                    label = stringResource(R.string.settings_app_name),
-                    pref = prefs.appName,
-                    onPrefChange = {
-                        prefs.appName = it
-                    }
-                )
-
                 SettingsSwitch(
                     label = stringResource(R.string.settings_app_icon),
                     secondaryLabel = stringResource(R.string.settings_app_icon_description),
                     pref = prefs.patchIcon,
                     onPrefChange = {
                         prefs.patchIcon = it
-                    }
-                )
-
-                SettingsSwitch(
-                    label = stringResource(R.string.settings_experimental_ui),
-                    secondaryLabel = stringResource(R.string.settings_experimental_ui_description),
-                    pref = prefs.experimentalUi,
-                    onPrefChange = {
-                        prefs.experimentalUi = it
-                    }
-                )
-
-                SettingsItemChoice(
-                    label = stringResource(R.string.settings_channel),
-                    pref = prefs.channel,
-                    labelFactory = {
-                        ctx.getString(it.labelRes)
-                    },
-                    onPrefChange = {
-                        prefs.channel = it
                     }
                 )
             }
