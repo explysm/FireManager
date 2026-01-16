@@ -425,9 +425,15 @@ class HomeScreen : Screen {
             }
         }
 
-        Box(modifier = Modifier.wrapContentSize(Alignment.Center)) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .wrapContentHeight(),
+            contentAlignment = Alignment.Center
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center,
                 modifier = Modifier
                     .onSizeChanged { pillSize = it }
                     .then(
@@ -439,7 +445,10 @@ class HomeScreen : Screen {
                                 .clickable { expanded = true }
                                 .padding(horizontal = 16.dp, vertical = 8.dp)
                         } else {
-                            Modifier.clickable { expanded = true }
+                            Modifier
+                                .fillMaxWidth()
+                                .clickable { expanded = true }
+                                .padding(vertical = 8.dp)
                         }
                     )
             ) {
