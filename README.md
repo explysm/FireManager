@@ -112,7 +112,7 @@ Fire Manager is open source under the OSL License. See `LICENSE` for details.
 
 ## ✏️ Known Issues
 - Package name is app.revenge.manager instead of app.fire.manager (not an issue but still something good to know)
-- Launcher icon is not Fire...
+- commits dont load when using github proxy, but downloading the xposed module works just fine. probably wont get around to fixing this, as its a cloudflare-side issue
 
 ---
 
