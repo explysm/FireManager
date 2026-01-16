@@ -427,99 +427,99 @@ class HomeScreen : Screen {
         }
 
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .wrapContentHeight(),
+            modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .onSizeChanged { pillSize = it }
-                    .then(
-                        if (isExperimental) {
-                            Modifier
-                                .clip(CircleShape)
-                                .frosted()
-                                .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp).copy(alpha = if (prefs.frostedGlass) 0.4f else 1f))
-                                .clickable { expanded = true }
-                                .padding(horizontal = 16.dp, vertical = 8.dp)
-                        } else {
-                            Modifier
-                                .fillMaxWidth()
-                                .clickable { expanded = true }
-                                .padding(vertical = 8.dp)
-                        }
+            Box(modifier = Modifier.wrapContentSize()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .onSizeChanged { pillSize = it }
+                        .then(
+                            if (isExperimental) {
+                                Modifier
+                                    .clip(CircleShape)
+                                    .frosted()
+                                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp).copy(alpha = if (prefs.frostedGlass) 0.4f else 1f))
+                                    .clickable { expanded = true }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            } else {
+                                Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { expanded = true }
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                            }
+                        )
+                ) {
+                    Text(
+                        text = currentLabel,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = if (isExperimental) 0.sp else 1.sp,
+                        style = if (isExperimental) MaterialTheme.typography.titleMedium 
+                                else MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
                     )
-            ) {
-                Text(
-                    text = currentLabel,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = if (isExperimental) 0.sp else 1.sp,
-                    style = if (isExperimental) MaterialTheme.typography.titleMedium 
-                            else MaterialTheme.typography.headlineMedium,
-                    color = MaterialTheme.colorScheme.primary
-                )
-                Icon(
-                    imageVector = Icons.Filled.ArrowDropDown,
-                    contentDescription = null,
-                    tint = FireOrange,
-                    modifier = Modifier.size(if (isExperimental) 20.dp else 24.dp)
-                )
-            }
-
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .then(
-                        if (isExperimental) {
-                            Modifier
-                                .width(with(density) { pillSize.width.toDp() })
-                                .clip(RoundedCornerShape(24.dp))
-                        } else Modifier
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        tint = FireOrange,
+                        modifier = Modifier.size(if (isExperimental) 20.dp else 24.dp)
                     )
-            ) {
-                prefs.installedInstances.toList().sorted().forEach { pkg ->
-                    val label = remember(pkg) {
-                        val storedName = prefs.getInstanceName(pkg)
-                        if (storedName.isNotBlank()) return@remember storedName
+                }
 
-                        try {
-                            context.packageManager.getApplicationLabel(
-                                context.packageManager.getApplicationInfo(pkg, 0)
-                            ).toString()
-                        } catch (e: Exception) {
-                            if (pkg == BuildConfig.MODDED_APP_PACKAGE_NAME) BuildConfig.MOD_NAME
-                            else pkg.split(".").last().replaceFirstChar { it.uppercase() }
-                        }
-                    }
-                    DropdownMenuItem(
-                        text = { 
-                            Text(
-                                text = label,
-                                fontWeight = if (prefs.packageName == pkg) FontWeight.Bold else FontWeight.Normal,
-                                style = MaterialTheme.typography.bodyMedium
-                            ) 
-                        },
-                        onClick = {
-                            expanded = false
-                            prefs.packageName = pkg
-                            prefs.discordVersion = prefs.getTargetVersion(pkg)
-                            viewModel.installManager.getInstalled()
-                        },
-                        leadingIcon = {
-                            if (prefs.packageName == pkg) {
-                                Icon(
-                                    imageVector = Icons.Filled.Check,
-                                    contentDescription = null,
-                                    tint = FireOrange,
-                                    modifier = Modifier.size(18.dp)
-                                )
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .width(with(density) { pillSize.width.toDp() })
+                        .background(MaterialTheme.colorScheme.surface)
+                        .then(
+                            if (isExperimental) {
+                                Modifier.clip(RoundedCornerShape(24.dp))
+                            } else Modifier
+                        )
+                ) {
+                    prefs.installedInstances.toList().sorted().forEach { pkg ->
+                        val label = remember(pkg) {
+                            val storedName = prefs.getInstanceName(pkg)
+                            if (storedName.isNotBlank()) return@remember storedName
+
+                            try {
+                                context.packageManager.getApplicationLabel(
+                                    context.packageManager.getApplicationInfo(pkg, 0)
+                                ).toString()
+                            } catch (e: Exception) {
+                                if (pkg == BuildConfig.MODDED_APP_PACKAGE_NAME) BuildConfig.MOD_NAME
+                                else pkg.split(".").last().replaceFirstChar { it.uppercase() }
                             }
                         }
-                    )
+                        DropdownMenuItem(
+                            text = { 
+                                Text(
+                                    text = label,
+                                    fontWeight = if (prefs.packageName == pkg) FontWeight.Bold else FontWeight.Normal,
+                                    style = MaterialTheme.typography.bodyMedium
+                                ) 
+                            },
+                            onClick = {
+                                expanded = false
+                                prefs.packageName = pkg
+                                prefs.discordVersion = prefs.getTargetVersion(pkg)
+                                viewModel.installManager.getInstalled()
+                            },
+                            leadingIcon = {
+                                if (prefs.packageName == pkg) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = null,
+                                        tint = FireOrange,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        )
+                    }
                 }
             }
         }
