@@ -129,6 +129,7 @@ class HomeScreen : Screen {
                 onConfirm = { pkg, name, ver ->
                     showInstallOptions = false
                     prefs.packageName = pkg
+                    prefs.installedInstances = prefs.installedInstances + pkg
                     val verCode = ver.toVersionCode()
                     prefs.discordVersion = verCode
                     prefs.setTargetVersion(pkg, verCode)
@@ -205,7 +206,7 @@ class HomeScreen : Screen {
                     }
 
                     item {
-                        InstanceSelector(isExperimental = prefs.experimentalUi, isTitleBar = false)
+                        InstanceSelector(isExperimental = prefs.experimentalUi)
                     }
 
                     item {
@@ -348,7 +349,12 @@ class HomeScreen : Screen {
 
         CenterAlignedTopAppBar(
             title = { 
-                InstanceSelector(isExperimental = prefs.experimentalUi, isTitleBar = true)
+                Text(
+                    text = stringResource(R.string.app_name),
+                    fontWeight = FontWeight.Black,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
             },
             actions = {
                 if (prefs.experimentalUi) {
@@ -397,7 +403,7 @@ class HomeScreen : Screen {
     }
 
     @Composable
-    private fun InstanceSelector(isExperimental: Boolean, isTitleBar: Boolean) {
+    private fun InstanceSelector(isExperimental: Boolean) {
         val prefs: PreferenceManager = get()
         val viewModel: HomeViewModel = getScreenModel()
         val context = LocalContext.current
@@ -415,15 +421,13 @@ class HomeScreen : Screen {
             }
         }
 
-        val text = if (isTitleBar) stringResource(R.string.app_name) else currentLabel
-
         Box(modifier = Modifier.wrapContentSize(Alignment.Center)) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier
                     .onSizeChanged { pillSize = it }
                     .then(
-                        if (isExperimental || isTitleBar) {
+                        if (isExperimental) {
                             Modifier
                                 .clip(CircleShape)
                                 .frosted()
@@ -436,18 +440,18 @@ class HomeScreen : Screen {
                     )
             ) {
                 Text(
-                    text = text,
-                    fontWeight = if (isExperimental || isTitleBar) FontWeight.Bold else FontWeight.Bold,
-                    letterSpacing = if (isExperimental || isTitleBar) 0.sp else 1.sp,
-                    style = if (isExperimental || isTitleBar) MaterialTheme.typography.titleMedium 
+                    text = currentLabel,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = if (isExperimental) 0.sp else 1.sp,
+                    style = if (isExperimental) MaterialTheme.typography.titleMedium 
                             else MaterialTheme.typography.headlineMedium,
-                    color = if (isTitleBar) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+                    color = MaterialTheme.colorScheme.primary
                 )
                 Icon(
                     imageVector = Icons.Filled.ArrowDropDown,
                     contentDescription = null,
                     tint = FireOrange,
-                    modifier = Modifier.size(if (isExperimental || isTitleBar) 20.dp else 24.dp)
+                    modifier = Modifier.size(if (isExperimental) 20.dp else 24.dp)
                 )
             }
 
@@ -456,7 +460,7 @@ class HomeScreen : Screen {
                 onDismissRequest = { expanded = false },
                 modifier = Modifier
                     .then(
-                        if (isExperimental || isTitleBar) {
+                        if (isExperimental) {
                             Modifier
                                 .width(with(density) { pillSize.width.toDp() })
                                 .clip(RoundedCornerShape(24.dp))

@@ -71,15 +71,8 @@ class PreferenceManager(private val context: Context) :
             mirror = Mirror.DEFAULT
         }
 
-        val pm = context.packageManager
-        installedInstances = (installedInstances + BuildConfig.MODDED_APP_PACKAGE_NAME).filter { pkg ->
-            try {
-                pm.getPackageInfo(pkg, 0)
-                true
-            } catch (e: Exception) {
-                false
-            }
-        }.toSet()
+        // Ensure the default package is always in the list
+        installedInstances = installedInstances + BuildConfig.MODDED_APP_PACKAGE_NAME
     }
 }
 
