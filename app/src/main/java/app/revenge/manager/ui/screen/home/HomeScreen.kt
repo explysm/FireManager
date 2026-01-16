@@ -205,13 +205,7 @@ class HomeScreen : Screen {
                     }
 
                     item {
-                        Text(
-                            text = prefs.appName,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary,
-                            letterSpacing = 1.sp
-                        )
+                        InstanceSelector(isExperimental = prefs.experimentalUi, isTitleBar = false)
                     }
 
                     item {
@@ -351,91 +345,16 @@ class HomeScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val prefs: PreferenceManager = get()
         val viewModel: HomeViewModel = getScreenModel()
-        var expanded by remember { mutableStateOf(false) }
-        val context = LocalContext.current
-        val density = LocalDensity.current
-        var pillSize by remember { mutableStateOf(IntSize.Zero) }
 
         if (prefs.experimentalUi) {
             CenterAlignedTopAppBar(
                 title = {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.Center,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Box(modifier = Modifier.wrapContentSize(Alignment.Center)) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .onSizeChanged { pillSize = it }
-                                    .clip(CircleShape)
-                                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp))
-                                    .clickable { expanded = true }
-                                    .padding(horizontal = 16.dp, vertical = 8.dp)
-                            ) {
-                                Text(
-                                    text = prefs.appName,
-                                    fontWeight = FontWeight.Bold,
-                                    style = MaterialTheme.typography.titleMedium,
-                                    color = MaterialTheme.colorScheme.primary
-                                )
-                                Icon(
-                                    imageVector = Icons.Filled.ArrowDropDown,
-                                    contentDescription = null,
-                                    tint = FireOrange,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
-
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                                modifier = Modifier
-                                    .width(with(density) { pillSize.width.toDp() })
-                                    .clip(RoundedCornerShape(24.dp))
-                                    .background(MaterialTheme.colorScheme.surface)
-                            ) {
-                                prefs.installedInstances.toList().forEach { pkg ->
-                                    val label = remember(pkg) {
-                                        try {
-                                            context.packageManager.getApplicationLabel(
-                                                context.packageManager.getApplicationInfo(pkg, 0)
-                                            ).toString()
-                                        } catch (e: Exception) {
-                                            pkg.split(".").last()
-                                        }
-                                    }
-                                    DropdownMenuItem(
-                                        text = { 
-                                            Text(
-                                                text = label,
-                                                fontWeight = if (prefs.packageName == pkg) FontWeight.Bold else FontWeight.Normal,
-                                                style = MaterialTheme.typography.bodyMedium
-                                            ) 
-                                        },
-                                        onClick = {
-                                            expanded = false
-                                            prefs.packageName = pkg
-                                            prefs.appName = label
-                                            prefs.discordVersion = prefs.getTargetVersion(pkg)
-                                            viewModel.installManager.getInstalled()
-                                        },
-                                        leadingIcon = {
-                                            if (prefs.packageName == pkg) {
-                                                Icon(
-                                                    imageVector = Icons.Filled.Check,
-                                                    contentDescription = null,
-                                                    tint = FireOrange,
-                                                    modifier = Modifier.size(18.dp)
-                                                )
-                                            }
-                                        }
-                                    )
-                                }
-                            }
-                        }
-                    }
+                    Text(
+                        text = stringResource(R.string.app_name),
+                        fontWeight = FontWeight.Black,
+                        style = MaterialTheme.typography.titleLarge,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
                 },
                 actions = {
                     Row(
@@ -469,73 +388,7 @@ class HomeScreen : Screen {
             )
         } else {
             CenterAlignedTopAppBar(
-                title = {
-                    Box(modifier = Modifier.wrapContentSize(Alignment.Center)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .clickable { expanded = true }
-                                .padding(horizontal = 12.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = prefs.appName,
-                                fontWeight = FontWeight.Black,
-                                letterSpacing = (-1).sp,
-                                style = MaterialTheme.typography.titleLarge,
-                                color = MaterialTheme.colorScheme.onSurface
-                            )
-                            Icon(
-                                imageVector = Icons.Filled.ArrowDropDown,
-                                contentDescription = null,
-                                tint = FireOrange,
-                                modifier = Modifier.size(24.dp)
-                            )
-                        }
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier.background(MaterialTheme.colorScheme.surface)
-                        ) {
-                            prefs.installedInstances.toList().forEach { pkg ->
-                                val label = remember(pkg) {
-                                    try {
-                                        context.packageManager.getApplicationLabel(
-                                            context.packageManager.getApplicationInfo(pkg, 0)
-                                        ).toString()
-                                    } catch (e: Exception) {
-                                        pkg.split(".").last()
-                                    }
-                                }
-                                DropdownMenuItem(
-                                    text = { 
-                                        Text(
-                                            text = label,
-                                            fontWeight = if (prefs.packageName == pkg) FontWeight.Bold else FontWeight.Normal
-                                        ) 
-                                    },
-                                    onClick = {
-                                        expanded = false
-                                        prefs.packageName = pkg
-                                        prefs.appName = label
-                                        prefs.discordVersion = prefs.getTargetVersion(pkg)
-                                        viewModel.installManager.getInstalled()
-                                    },
-                                    leadingIcon = {
-                                        if (prefs.packageName == pkg) {
-                                            Icon(
-                                                imageVector = Icons.Filled.Check,
-                                                contentDescription = null,
-                                                tint = FireOrange
-                                            )
-                                        }
-                                    }
-                                )
-                            }
-                        }
-                    }
-                },
+                title = { InstanceSelector(isExperimental = false, isTitleBar = true) },
                 actions = { Actions() },
                 colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
@@ -549,6 +402,104 @@ class HomeScreen : Screen {
                     )
                 )
             )
+        }
+    }
+
+    @Composable
+    private fun InstanceSelector(isExperimental: Boolean, isTitleBar: Boolean) {
+        val prefs: PreferenceManager = get()
+        val viewModel: HomeViewModel = getScreenModel()
+        val context = LocalContext.current
+        val density = LocalDensity.current
+        var expanded by remember { mutableStateOf(false) }
+        var pillSize by remember { mutableStateOf(IntSize.Zero) }
+
+        Box(modifier = Modifier.wrapContentSize(Alignment.Center)) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .onSizeChanged { pillSize = it }
+                    .then(
+                        if (isExperimental) {
+                            Modifier
+                                .clip(CircleShape)
+                                .clickable { expanded = true }
+                                .padding(horizontal = 16.dp, vertical = 8.dp)
+                        } else {
+                            Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .clickable { expanded = true }
+                                .padding(horizontal = 12.dp, vertical = 4.dp)
+                        }
+                    )
+            ) {
+                Text(
+                    text = prefs.appName,
+                    fontWeight = if (isExperimental) FontWeight.Bold else if (isTitleBar) FontWeight.Black else FontWeight.Bold,
+                    letterSpacing = if (isExperimental) 0.sp else if (isTitleBar) (-1).sp else 1.sp,
+                    style = if (isExperimental) MaterialTheme.typography.titleMedium 
+                            else if (isTitleBar) MaterialTheme.typography.titleLarge 
+                            else MaterialTheme.typography.headlineMedium,
+                    color = if (isTitleBar) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.primary
+                )
+                Icon(
+                    imageVector = Icons.Filled.ArrowDropDown,
+                    contentDescription = null,
+                    tint = FireOrange,
+                    modifier = Modifier.size(if (isExperimental) 20.dp else 24.dp)
+                )
+            }
+
+            DropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false },
+                modifier = Modifier
+                    .then(
+                        if (isExperimental) {
+                            Modifier
+                                .width(with(density) { pillSize.width.toDp() })
+                                .clip(RoundedCornerShape(24.dp))
+                        } else Modifier
+                    )
+            ) {
+                prefs.installedInstances.toList().forEach { pkg ->
+                    val label = remember(pkg) {
+                        try {
+                            context.packageManager.getApplicationLabel(
+                                context.packageManager.getApplicationInfo(pkg, 0)
+                            ).toString()
+                        } catch (e: Exception) {
+                            pkg.split(".").last()
+                        }
+                    }
+                    DropdownMenuItem(
+                        text = { 
+                            Text(
+                                text = label,
+                                fontWeight = if (prefs.packageName == pkg) FontWeight.Bold else FontWeight.Normal,
+                                style = MaterialTheme.typography.bodyMedium
+                            ) 
+                        },
+                        onClick = {
+                            expanded = false
+                            prefs.packageName = pkg
+                            prefs.appName = label
+                            prefs.discordVersion = prefs.getTargetVersion(pkg)
+                            viewModel.installManager.getInstalled()
+                        },
+                        leadingIcon = {
+                            if (prefs.packageName == pkg) {
+                                Icon(
+                                    imageVector = Icons.Filled.Check,
+                                    contentDescription = null,
+                                    tint = FireOrange,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    )
+                }
+            }
         }
     }
 

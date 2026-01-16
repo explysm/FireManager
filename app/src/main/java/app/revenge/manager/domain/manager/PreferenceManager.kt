@@ -114,8 +114,10 @@ class PreferenceManager(private val context: Context) :
             mirror = Mirror.DEFAULT
         }
 
+        readInstancesFromFile()
+
         val pm = context.packageManager
-        installedInstances = installedInstances.filter { pkg ->
+        installedInstances = (installedInstances + BuildConfig.MODDED_APP_PACKAGE_NAME).filter { pkg ->
             try {
                 pm.getPackageInfo(pkg, 0)
                 true
