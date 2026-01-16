@@ -1,16 +1,22 @@
 package app.revenge.manager.ui.screen.home
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Delete
@@ -19,6 +25,7 @@ import androidx.compose.material.icons.filled.OpenInNew
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,6 +36,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,10 +45,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.paging.compose.collectAsLazyPagingItems
 import app.revenge.manager.BuildConfig
 import app.revenge.manager.R
@@ -48,6 +60,9 @@ import app.revenge.manager.domain.manager.PreferenceManager
 import app.revenge.manager.ui.components.SegmentedButton
 import app.revenge.manager.ui.screen.installer.InstallerScreen
 import app.revenge.manager.ui.screen.settings.SettingsScreen
+import app.revenge.manager.ui.theme.FireOrange
+import app.revenge.manager.ui.theme.FireRed
+import app.revenge.manager.ui.theme.FireYellow
 import app.revenge.manager.ui.viewmodel.home.HomeViewModel
 import app.revenge.manager.ui.widgets.AppIcon
 import app.revenge.manager.ui.widgets.dialog.BatteryOptimizationDialog
@@ -57,6 +72,7 @@ import app.revenge.manager.ui.widgets.home.CommitList
 import app.revenge.manager.ui.widgets.updater.UpdateDialog
 import app.revenge.manager.utils.Constants
 import app.revenge.manager.utils.DiscordVersion
+import app.revenge.manager.utils.glow
 import app.revenge.manager.utils.navigate
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.koin.getScreenModel
@@ -133,149 +149,226 @@ class HomeScreen : Screen {
 
         Scaffold(
             topBar = { TitleBar() },
+            containerColor = MaterialTheme.colorScheme.background
         ) { pv ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .padding(pv)
-                    .padding(16.dp)
-                    .fillMaxWidth()
-            ) {
-                AppIcon(
-                    customIcon = prefs.patchIcon,
-                    releaseChannel = prefs.channel,
-                    modifier = Modifier.size(60.dp)
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Fiery Background Gradient
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    FireRed.copy(alpha = 0.2f),
+                                    FireOrange.copy(alpha = 0.1f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
                 )
 
-                Text(
-                    text = prefs.appName,
-                    style = MaterialTheme.typography.titleLarge
-                )
+                LazyColumn(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .padding(pv)
+                        .fillMaxSize(),
+                    contentPadding = Arrangement.spacedBy(16.dp).let { 
+                        androidx.compose.foundation.layout.PaddingValues(16.dp) 
+                    }
+                ) {
+                    item {
+                        AppIcon(
+                            customIcon = prefs.patchIcon,
+                            releaseChannel = prefs.channel,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .glow(FireOrange, radius = 30.dp, alpha = 0.6f)
+                        )
+                    }
 
-                if (prefs.installedInstances.size > 1) {
-                    val context = LocalContext.current
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        items(prefs.installedInstances.toList()) { pkg ->
-                            val isSelected = prefs.packageName == pkg
-                            val label = remember(pkg) {
-                                try {
-                                    context.packageManager.getApplicationLabel(
-                                        context.packageManager.getApplicationInfo(pkg, 0)
-                                    ).toString()
-                                } catch (e: Exception) {
-                                    pkg.split(".").last()
+                    item {
+                        Text(
+                            text = prefs.appName,
+                            style = MaterialTheme.typography.headlineMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.primary,
+                            letterSpacing = 1.sp
+                        )
+                    }
+
+                    if (prefs.installedInstances.size > 1) {
+                        item {
+                            val context = LocalContext.current
+                            LazyRow(
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                items(prefs.installedInstances.toList()) { pkg ->
+                                    val isSelected = prefs.packageName == pkg
+                                    val label = remember(pkg) {
+                                        try {
+                                            context.packageManager.getApplicationLabel(
+                                                context.packageManager.getApplicationInfo(pkg, 0)
+                                            ).toString()
+                                        } catch (e: Exception) {
+                                            pkg.split(".").last()
+                                        }
+                                    }
+
+                                    ElevatedCard(
+                                        onClick = {
+                                            prefs.packageName = pkg
+                                            prefs.appName = label
+                                            prefs.discordVersion = prefs.getTargetVersion(pkg)
+                                            viewModel.installManager.getInstalled()
+                                        },
+                                        shape = RoundedCornerShape(24.dp),
+                                        colors = if (isSelected) CardDefaults.elevatedCardColors(
+                                            containerColor = MaterialTheme.colorScheme.primary
+                                        ) else CardDefaults.elevatedCardColors(),
+                                        elevation = CardDefaults.elevatedCardElevation(
+                                            defaultElevation = if (isSelected) 8.dp else 2.dp
+                                        )
+                                    ) {
+                                        Text(
+                                            text = label,
+                                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                                            style = MaterialTheme.typography.labelLarge,
+                                            color = if (isSelected) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurface,
+                                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal
+                                        )
+                                    }
                                 }
                             }
+                        }
+                    }
 
-                            ElevatedCard(
-                                onClick = {
-                                    prefs.packageName = pkg
-                                    prefs.appName = label
-                                    prefs.discordVersion = prefs.getTargetVersion(pkg)
-                                    viewModel.installManager.getInstalled()
-                                },
-                                colors = if (isSelected) CardDefaults.elevatedCardColors(
-                                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                                ) else CardDefaults.elevatedCardColors()
-                            ) {
+                    item {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AnimatedVisibility(visible = currentVersion != null) {
                                 Text(
-                                    text = label,
-                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                    style = MaterialTheme.typography.labelMedium
+                                    text = stringResource(
+                                        R.string.version_current,
+                                        currentVersion.toString()
+                                    ),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium,
+                                    color = LocalContentColor.current.copy(alpha = 0.7f),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            val latestLabel =
+                                if (prefs.discordVersion.isNotBlank()) R.string.version_target else R.string.version_latest
+
+                            AnimatedVisibility(visible = latestVersion != null) {
+                                Text(
+                                    text = stringResource(latestLabel, latestVersion.toString()),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium,
+                                    color = FireOrange,
+                                    textAlign = TextAlign.Center
                                 )
                             }
                         }
                     }
-                }
 
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    AnimatedVisibility(visible = currentVersion != null) {
+                    item {
+                        Button(
+                            onClick = {
+                                showInstallOptions = true
+                            },
+                            enabled = latestVersion != null && (prefs.allowDowngrade || latestVersion >= (currentVersion ?: Constants.DUMMY_VERSION)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .glow(FireRed.copy(alpha = 0.5f), radius = 10.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            val label = when {
+                                latestVersion == null -> R.string.msg_loading
+                                currentVersion == null -> R.string.action_install
+                                currentVersion == latestVersion -> R.string.action_reinstall
+                                latestVersion > currentVersion -> R.string.action_update
+                                else -> if (prefs.allowDowngrade) R.string.msg_downgrade else R.string.msg_downgrade_disallowed
+                            }
+
+                            Text(
+                                text = stringResource(label).uppercase(),
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.ExtraBold,
+                                maxLines = 1,
+                                modifier = Modifier.basicMarquee()
+                            )
+                        }
+                    }
+
+                    item {
+                        AnimatedVisibility(visible = viewModel.installManager.current != null) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .padding(4.dp)
+                            ) {
+                                SegmentedButton(
+                                    icon = Icons.Filled.OpenInNew,
+                                    text = stringResource(R.string.action_launch),
+                                    onClick = { viewModel.launchMod() }
+                                )
+                                SegmentedButton(
+                                    icon = Icons.Filled.Info,
+                                    text = stringResource(R.string.action_info),
+                                    onClick = { viewModel.launchModInfo() }
+                                )
+                                SegmentedButton(
+                                    icon = Icons.Filled.Delete,
+                                    text = stringResource(R.string.action_uninstall),
+                                    onClick = { viewModel.uninstallMod() }
+                                )
+                            }
+                        }
+                    }
+
+                    item {
                         Text(
-                            text = stringResource(
-                                R.string.version_current,
-                                currentVersion.toString()
-                            ),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = LocalContentColor.current.copy(alpha = 0.5f),
-                            textAlign = TextAlign.Center
+                            text = "Changelog",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            textAlign = TextAlign.Start
                         )
                     }
 
-                    val latestLabel =
-                        if (prefs.discordVersion.isNotBlank()) R.string.version_target else R.string.version_latest
-
-                    AnimatedVisibility(visible = latestVersion != null) {
-                        Text(
-                            text = stringResource(latestLabel, latestVersion.toString()),
-                            style = MaterialTheme.typography.labelLarge,
-                            color = LocalContentColor.current.copy(alpha = 0.5f),
-                            textAlign = TextAlign.Center
-                        )
+                    item {
+                        ElevatedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(400.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.elevatedCardColors(
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                            )
+                        ) {
+                            CommitList(
+                                commits = viewModel.commits.collectAsLazyPagingItems()
+                            )
+                        }
                     }
-                }
-
-                Button(
-                    onClick = {
-                        showInstallOptions = true
-                    },
-                    enabled = latestVersion != null && (prefs.allowDowngrade || latestVersion >= (currentVersion ?: Constants.DUMMY_VERSION)),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    val label = when {
-                        latestVersion == null -> R.string.msg_loading
-                        currentVersion == null -> R.string.action_install
-                        currentVersion == latestVersion -> R.string.action_reinstall
-                        latestVersion > currentVersion -> R.string.action_update
-                        else -> if (prefs.allowDowngrade) R.string.msg_downgrade else R.string.msg_downgrade_disallowed
+                    
+                    item {
+                        Spacer(modifier = Modifier.height(32.dp))
                     }
-
-                    Text(
-                        text = stringResource(label),
-                        textAlign = TextAlign.Center,
-                        maxLines = 1,
-                        modifier = Modifier
-                            .basicMarquee()
-                            .fillMaxWidth()
-                    )
-                }
-
-                AnimatedVisibility(visible = viewModel.installManager.current != null) {
-                    Row(
-                        horizontalArrangement = Arrangement.spacedBy(2.dp),
-                        modifier = Modifier.clip(RoundedCornerShape(16.dp))
-                    ) {
-                        SegmentedButton(
-                            icon = Icons.Filled.OpenInNew,
-                            text = stringResource(R.string.action_launch),
-                            onClick = { viewModel.launchMod() }
-                        )
-                        SegmentedButton(
-                            icon = Icons.Filled.Info,
-                            text = stringResource(R.string.action_info),
-                            onClick = { viewModel.launchModInfo() }
-                        )
-                        SegmentedButton(
-                            icon = Icons.Filled.Delete,
-                            text = stringResource(R.string.action_uninstall),
-                            onClick = { viewModel.uninstallMod() }
-                        )
-                    }
-                }
-
-                ElevatedCard(
-                    modifier = Modifier
-                        .fillMaxSize()
-                ) {
-                    CommitList(
-                        commits = viewModel.commits.collectAsLazyPagingItems()
-                    )
                 }
             }
         }
@@ -285,8 +378,17 @@ class HomeScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     private fun TitleBar() {
         TopAppBar(
-            title = { Text(stringResource(R.string.title_home)) },
-            actions = { Actions() }
+            title = { 
+                Text(
+                    stringResource(R.string.title_home),
+                    fontWeight = FontWeight.Black,
+                    letterSpacing = (-1).sp
+                ) 
+            },
+            actions = { Actions() },
+            colors = TopAppBarDefaults.topAppBarColors(
+                containerColor = Color.Transparent
+            )
         )
     }
 
@@ -298,7 +400,8 @@ class HomeScreen : Screen {
         IconButton(onClick = { viewModel.getDiscordVersions() }) {
             Icon(
                 imageVector = Icons.Filled.Refresh,
-                contentDescription = stringResource(R.string.action_reload)
+                contentDescription = stringResource(R.string.action_reload),
+                tint = FireOrange
             )
         }
         IconButton(onClick = { navigator.navigate(SettingsScreen()) }) {

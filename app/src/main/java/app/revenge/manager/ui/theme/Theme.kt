@@ -8,6 +8,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import app.revenge.manager.domain.manager.PreferenceManager
 import app.revenge.manager.domain.manager.Theme
@@ -25,19 +26,64 @@ fun RevengeManagerTheme(
         Theme.LIGHT -> false
     }
 
-    val colorScheme = when {
-        dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-            val context = LocalContext.current
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        val colorScheme = when {
+
+            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
+
+                val context = LocalContext.current
+
+                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+
+            }
+
+    
+
+            darkTheme -> darkColorScheme(
+
+                primary = PrimaryDark,
+
+                secondary = SecondaryDark,
+
+                background = BackgroundDark,
+
+                surface = SurfaceDark,
+
+                onSurface = OnSurfaceDark,
+
+                primaryContainer = Color(0xFF3D1400),
+
+                onPrimaryContainer = Color(0xFFFFDBCF)
+
+            )
+
+            else -> lightColorScheme(
+
+                primary = PrimaryLight,
+
+                secondary = SecondaryLight,
+
+                background = BackgroundLight,
+
+                surface = SurfaceLight,
+
+                onSurface = OnSurfaceLight
+
+            )
+
         }
 
-        darkTheme -> darkColorScheme()
-        else -> lightColorScheme()
+    
+
+        MaterialTheme(
+
+            colorScheme = colorScheme,
+
+            typography = Typography,
+
+            content = content
+
+        )
+
     }
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
-        content = content
-    )
-}
+    
