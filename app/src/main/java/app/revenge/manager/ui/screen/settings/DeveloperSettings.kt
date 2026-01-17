@@ -91,6 +91,21 @@ class DeveloperSettings: Screen {
                     onPrefChange = { prefs.debuggable = it }
                 )
 
+                SettingsSwitch(
+                    label = stringResource(R.string.settings_advanced_install_options),
+                    secondaryLabel = stringResource(R.string.settings_advanced_install_options_description),
+                    pref = prefs.advancedInstallOptions,
+                    onPrefChange = { prefs.advancedInstallOptions = it }
+                )
+
+                if (prefs.advancedInstallOptions) {
+                    SettingsTextField(
+                        label = stringResource(R.string.settings_custom_xposed_url),
+                        pref = prefs.customXposedBundleUrl,
+                        onPrefChange = { prefs.customXposedBundleUrl = it }
+                    )
+                }
+
                 SettingsTextField(
                     label = stringResource(R.string.settings_module_location),
                     supportingText = stringResource(R.string.settings_module_location_description),

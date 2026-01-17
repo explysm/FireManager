@@ -61,6 +61,10 @@ class PreferenceManager(private val context: Context) :
 
     var frostedGlass by booleanPreference("frosted_glass", false)
 
+    var advancedInstallOptions by booleanPreference("advanced_install_options", false)
+
+    var customXposedBundleUrl by stringPreference("custom_xposed_bundle_url", "https://github.com/explysm/FireXposed/releases/latest/download/app-release.apk")
+
     var installedInstances by stringSetPreference("installed_instances", setOf(BuildConfig.MODDED_APP_PACKAGE_NAME))
 
     var hasAskedForBatteryOpt by booleanPreference("has_asked_for_battery_opt", false)
@@ -77,6 +81,13 @@ class PreferenceManager(private val context: Context) :
 
     fun setInstanceName(packageName: String, name: String) {
         putString("instance_name_$packageName", name)
+    }
+
+    fun getCustomXposedUrl(packageName: String): String =
+        getString("custom_xposed_url_$packageName", "")
+
+    fun setCustomXposedUrl(packageName: String, url: String) {
+        putString("custom_xposed_url_$packageName", url)
     }
 
     init {

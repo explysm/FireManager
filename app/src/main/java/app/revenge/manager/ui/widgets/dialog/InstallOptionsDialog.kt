@@ -31,17 +31,21 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import app.revenge.manager.BuildConfig
 import app.revenge.manager.R
+import app.revenge.manager.domain.manager.PreferenceManager
 import app.revenge.manager.utils.DiscordVersion
+import org.koin.androidx.compose.get
 
 @Composable
 fun InstallOptionsDialog(
     versions: Map<DiscordVersion.Type, DiscordVersion?>,
     defaultVersion: DiscordVersion,
     onDismiss: () -> Unit,
-    onConfirm: (packageName: String, appName: String, version: DiscordVersion) -> Unit
+    onConfirm: (packageName: String, appName: String, version: DiscordVersion, customXposedUrl: String) -> Unit
 ) {
+    val prefs: PreferenceManager = get()
     var packageName by remember { mutableStateOf(BuildConfig.MODDED_APP_PACKAGE_NAME) }
     var appName by remember { mutableStateOf(BuildConfig.MOD_NAME) }
+    var customXposedUrl by remember { mutableStateOf(prefs.customXposedBundleUrl) }
     
     // Selection state: Stable, Beta, Alpha, Custom
     var selectionMode by remember { mutableStateOf("Stable") }
@@ -88,6 +92,17 @@ fun InstallOptionsDialog(
                         text = "Warning: This will override the original FireCord installation.",
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodySmall
+                    )
+                }
+
+                if (prefs.advancedInstallOptions) {
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = customXposedUrl,
+                        onValueChange = { customXposedUrl = it },
+                        label = { Text(stringResource(R.string.settings_custom_xposed_url)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
                     )
                 }
 
@@ -154,7 +169,7 @@ fun InstallOptionsDialog(
         },
         confirmButton = {
             FilledTonalButton(
-                onClick = { selectedVersion?.let { onConfirm(packageName, appName, it) } },
+                onClick = { selectedVersion?.let { onConfirm(packageName, appName, it, customXposedUrl) } },
                 enabled = packageName.isNotBlank() && appName.isNotBlank() && selectedVersion != null
             ) {
                 Text(stringResource(R.string.action_install))

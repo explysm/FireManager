@@ -155,6 +155,9 @@
     <string name="settings_version">Discord version</string>
     <string name="settings_debuggable">Debuggable</string>
     <string name="settings_debuggable_description">Enable debuggable flag</string>
+    <string name="settings_advanced_install_options">Advanced install options</string>
+    <string name="settings_advanced_install_options_description">Allows you to use a custom Xposed bundle link when installing an instance</string>
+    <string name="settings_custom_xposed_url">Custom Xposed bundle URL</string>
     <string name="settings_allow_downgrade">Allow downgrading</string>
     <string name="settings_allow_downgrade_description">Bypass downgrade check by Fire Manager, useful if your device already allows downgrading through root</string>
 

@@ -17,7 +17,16 @@ class DownloadModStep(
 
     override val nameRes = R.string.step_dl_mod
 
-    override val downloadFullUrl: String = "https://github.com/explysm/FireXposed/releases/latest/download/app-release.apk"
+    override val downloadFullUrl: String
+        get() {
+            val customUrl = preferenceManager.getCustomXposedUrl(preferenceManager.packageName)
+            return if (preferenceManager.advancedInstallOptions && customUrl.isNotBlank()) {
+                customUrl
+            } else {
+                "https://github.com/explysm/FireXposed/releases/latest/download/app-release.apk"
+            }
+        }
+
     override val destination = preferenceManager.moduleLocation
     override val workingCopy = workingDir.resolve("xposed.apk")
 

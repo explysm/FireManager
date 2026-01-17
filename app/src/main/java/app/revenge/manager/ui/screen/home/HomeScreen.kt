@@ -127,7 +127,7 @@ class HomeScreen : Screen {
                 versions = viewModel.discordVersions ?: emptyMap(),
                 defaultVersion = latestVersion ?: Constants.DUMMY_VERSION,
                 onDismiss = { showInstallOptions = false },
-                onConfirm = { pkg, name, ver ->
+                onConfirm = { pkg, name, ver, url ->
                     showInstallOptions = false
                     prefs.packageName = pkg
                     prefs.setInstanceName(pkg, name)
@@ -135,6 +135,9 @@ class HomeScreen : Screen {
                     val verCode = ver.toVersionCode()
                     prefs.discordVersion = verCode
                     prefs.setTargetVersion(pkg, verCode)
+                    if (prefs.advancedInstallOptions) {
+                        prefs.setCustomXposedUrl(pkg, url)
+                    }
                     viewModel.installManager.getInstalled()
                     navigator.navigate(InstallerScreen(ver))
                 }
