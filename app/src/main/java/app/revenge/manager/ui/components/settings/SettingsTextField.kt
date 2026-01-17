@@ -1,6 +1,7 @@
 package app.revenge.manager.ui.components.settings
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -15,7 +16,7 @@ fun SettingsTextField(
     supportingText: String? = null,
     onPrefChange: (String) -> Unit,
 ) {
-    Box(modifier = Modifier.padding(horizontal = 18.dp, vertical = 10.dp)) {
+    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             value = pref,
@@ -24,7 +25,8 @@ fun SettingsTextField(
             label = { Text(label) },
             isError = error,
             singleLine = true,
-            supportingText = if (supportingText != null) { -> Text(supportingText) } else null
+            shape = RoundedCornerShape(16.dp),
+            supportingText = if (supportingText != null) { { Text(supportingText) } } else null
         )
     }
 }

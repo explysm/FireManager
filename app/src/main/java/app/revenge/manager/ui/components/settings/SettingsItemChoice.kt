@@ -1,13 +1,15 @@
 package app.revenge.manager.ui.components.settings
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 
 @Composable
 inline fun <reified E : Enum<E>> SettingsItemChoice(
@@ -19,7 +21,6 @@ inline fun <reified E : Enum<E>> SettingsItemChoice(
     crossinline labelFactory: (E) -> String = { it.toString() },
     crossinline onPrefChange: (E) -> Unit,
 ) {
-    val ctx = LocalContext.current
     val choiceLabel = labelFactory(pref)
     var opened = remember {
         mutableStateOf(false)
@@ -43,8 +44,15 @@ inline fun <reified E : Enum<E>> SettingsItemChoice(
                 onPrefChange(it)
             }
         )
-        FilledTonalButton(onClick = { opened.value = true }, enabled = !disabled) {
-            Text(choiceLabel)
+        FilledTonalButton(
+            onClick = { opened.value = true }, 
+            enabled = !disabled,
+            shape = RoundedCornerShape(12.dp)
+        ) {
+            Text(
+                text = choiceLabel,
+                fontWeight = FontWeight.Bold
+            )
         }
     }
 }
