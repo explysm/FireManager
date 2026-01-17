@@ -1,110 +1,128 @@
 package app.revenge.manager.ui.widgets.settings
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ColorScheme
-import androidx.compose.material3.Icon
-import androidx.compose.material3.contentColorFor
-import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import app.revenge.manager.BuildConfig
-import app.revenge.manager.R
-import app.revenge.manager.domain.manager.PreferenceManager
-import app.revenge.manager.utils.DiscordVersion
-import org.koin.androidx.compose.get
+import app.revenge.manager.ui.theme.FireOrange
+import app.revenge.manager.ui.theme.FireRed
+import app.revenge.manager.utils.glow
 
 @Composable
 fun ThemePreview(
     colorScheme: ColorScheme,
     modifier: Modifier = Modifier
 ) {
-    val prefs: PreferenceManager = get()
-    val light = colorScheme.background.luminance() > 0.5f
-    val layerModifier = Modifier.height(300.dp)
-    val iconColor = remember(prefs.patchIcon) {
-        when {
-            prefs.patchIcon -> Color(BuildConfig.MODDED_APP_ICON)
-            else -> Color(BuildConfig.MODDED_APP_ICON_OTHER)
-        }
-    }
-
     Box(
         modifier = modifier
+            .height(260.dp)
+            .aspectRatio(9f / 16f)
+            .clip(RoundedCornerShape(16.dp))
+            .background(colorScheme.background)
+            .border(
+                1.dp,
+                colorScheme.outline.copy(alpha = 0.2f),
+                RoundedCornerShape(16.dp)
+            )
     ) {
-        Icon(
-            painter = painterResource(R.drawable.ts_bg),
-            contentDescription = null,
-            tint = colorScheme.background,
-            modifier = layerModifier
+        // Fiery Background Gradient
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(100.dp)
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(
+                            FireRed.copy(alpha = 0.2f),
+                            FireOrange.copy(alpha = 0.1f),
+                            Color.Transparent
+                        )
+                    )
+                )
         )
 
-        Icon(
-            painter = painterResource(R.drawable.ts_surface_l2),
-            contentDescription = null,
-            tint = colorScheme.surfaceColorAtElevation(2.dp),
-            modifier = layerModifier
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(12.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            // Fake Top Bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(24.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(colorScheme.onSurface.copy(alpha = 0.1f))
+                )
+                Box(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(8.dp)
+                        .clip(CircleShape)
+                        .background(colorScheme.onSurface.copy(alpha = 0.2f))
+                )
+                Box(
+                    modifier = Modifier
+                        .size(12.dp)
+                        .clip(CircleShape)
+                        .background(colorScheme.onSurface.copy(alpha = 0.1f))
+                )
+            }
 
-        Icon(
-            painter = painterResource(R.drawable.ts_surface_l1),
-            contentDescription = null,
-            tint = colorScheme.surfaceColorAtElevation(1.dp),
-            modifier = layerModifier
-        )
+            Spacer(modifier = Modifier.height(8.dp))
 
-        Icon(
-            painter = painterResource(R.drawable.ts_outline),
-            contentDescription = null,
-            tint = colorScheme.outline.copy(alpha = 0.3f),
-            modifier = layerModifier
-        )
+            // App Icon
+            Box(
+                modifier = Modifier
+                    .size(56.dp)
+                    .glow(FireOrange, radius = 16.dp, alpha = 0.4f)
+                    .clip(CircleShape)
+                    .background(colorScheme.surfaceVariant)
+            )
 
-        Image(
-            painter = painterResource(R.drawable.ts_avatars),
-            contentDescription = null,
-            modifier = layerModifier
-        )
+            // Instance Selector Pill
+            Box(
+                modifier = Modifier
+                    .width(80.dp)
+                    .height(16.dp)
+                    .clip(CircleShape)
+                    .background(colorScheme.surfaceVariant.copy(alpha = 0.8f))
+            )
 
-        Icon(
-            painter = painterResource(R.drawable.ts_primary),
-            contentDescription = null,
-            tint = colorScheme.primary,
-            modifier = layerModifier
-        )
+            // Action Button
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(32.dp)
+                    .clip(RoundedCornerShape(8.dp))
+                    .background(colorScheme.primary)
+            )
 
-        Icon(
-            painter = painterResource(R.drawable.ts_content_50),
-            contentDescription = null,
-            tint = colorScheme.contentColorFor(colorScheme.background).copy(alpha = 0.5f),
-            modifier = layerModifier
-        )
-
-        Icon(
-            painter = painterResource(R.drawable.ts_content),
-            contentDescription = null,
-            tint = colorScheme.contentColorFor(colorScheme.background),
-            modifier = layerModifier
-        )
-
-        Icon(
-            painter = painterResource(R.drawable.ts_icon),
-            contentDescription = null,
-            tint = iconColor,
-            modifier = layerModifier
-        )
-
-        Icon(
-            painter = painterResource(R.drawable.ts_status),
-            contentDescription = null,
-            tint = if(light) Color(0xFF686568) else Color.White,
-            modifier = layerModifier
-        )
+            // Changelog Card
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .clip(RoundedCornerShape(12.dp))
+                    .background(colorScheme.surfaceVariant.copy(alpha = 0.5f))
+            )
+        }
     }
 }

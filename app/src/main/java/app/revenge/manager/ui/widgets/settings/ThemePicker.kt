@@ -37,11 +37,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import app.revenge.manager.R
 import app.revenge.manager.domain.manager.PreferenceManager
 import app.revenge.manager.domain.manager.Theme
+import app.revenge.manager.ui.theme.FireOrange
 import app.revenge.manager.utils.contentDescription
 import app.revenge.manager.utils.thenIf
 import kotlinx.coroutines.launch
@@ -68,7 +70,7 @@ fun ThemePicker(
         Box {
             HorizontalPager(
                 state = pagerState,
-                contentPadding = PaddingValues(16.dp)
+                contentPadding = PaddingValues(horizontal = 32.dp)
             ) { page ->
                 val (colors, theme) = when (page) {
                     0 -> systemTheme to Theme.SYSTEM
@@ -85,9 +87,10 @@ fun ThemePicker(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.spacedBy(12.dp),
                         modifier = Modifier
-                            .clip(RoundedCornerShape(16.dp))
+                            .padding(8.dp)
+                            .clip(RoundedCornerShape(24.dp))
                             .thenIf(prefs.theme == theme) {
-                                background(MaterialTheme.colorScheme.tertiaryContainer)
+                                background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
                             }
                             .clickable { prefs.theme = theme }
                             .padding(16.dp)
@@ -99,8 +102,9 @@ fun ThemePicker(
 
                         Text(
                             text = stringResource(theme.labelRes),
-                            style = MaterialTheme.typography.labelLarge,
-                            fontSize = 16.sp
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = if (prefs.theme == theme) FireOrange else MaterialTheme.colorScheme.onSurface
                         )
                     }
                 }
@@ -118,7 +122,8 @@ fun ThemePicker(
                     Icon(
                         imageVector = Icons.Outlined.NavigateBefore,
                         contentDescription = stringResource(R.string.action_previous_theme),
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(32.dp),
+                        tint = FireOrange
                     )
                 }
             }
@@ -135,7 +140,8 @@ fun ThemePicker(
                     Icon(
                         imageVector = Icons.Outlined.NavigateNext,
                         contentDescription = stringResource(R.string.action_next_theme),
-                        modifier = Modifier.size(34.dp)
+                        modifier = Modifier.size(32.dp),
+                        tint = FireOrange
                     )
                 }
             }
