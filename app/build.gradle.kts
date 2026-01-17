@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "app.revenge.manager"
+    namespace = "app.fire.manager"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "app.revenge.manager"
+        applicationId = "app.fire.manager"
         minSdk = 28
         targetSdk = 34
         versionName = version.toString()

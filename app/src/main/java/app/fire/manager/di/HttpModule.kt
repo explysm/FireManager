@@ -1,0 +1,44 @@
+package app.fire.manager.di
+
+import app.fire.manager.network.service.HttpService
+import app.fire.manager.network.service.RestService
+import io.ktor.client.HttpClient
+import io.ktor.client.engine.cio.CIO
+import io.ktor.client.plugins.HttpTimeout
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.defaultRequest
+import io.ktor.client.request.header
+import io.ktor.http.HttpHeaders
+import io.ktor.serialization.kotlinx.json.json
+import kotlinx.serialization.json.Json
+import org.koin.core.module.dsl.singleOf
+import org.koin.dsl.module
+
+val httpModule = module {
+
+    fun provideJson() = Json {
+        ignoreUnknownKeys = true
+        isLenient = true
+    }
+
+    fun provideHttpClient(json: Json) = HttpClient(CIO) {
+        install(ContentNegotiation) {
+            json(json)
+        }
+
+        install(HttpTimeout) {
+            socketTimeoutMillis = 15000
+            connectTimeoutMillis = 15000
+        }
+
+        defaultRequest {
+            header(HttpHeaders.UserAgent, "FireManager/${app.fire.manager.BuildConfig.VERSION_NAME}")
+        }
+    }
+
+    singleOf(::provideJson)
+    singleOf(::provideHttpClient)
+    singleOf(::HttpService)
+    singleOf(::RestService)
+
+}

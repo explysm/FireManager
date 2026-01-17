@@ -1,0 +1,551 @@
+package app.fire.manager.ui.screen.home
+
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowDropDown
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.OpenInNew
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ElevatedCard
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.LocalContentColor
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.surfaceColorAtElevation
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.paging.compose.collectAsLazyPagingItems
+import app.fire.manager.BuildConfig
+import app.fire.manager.R
+import app.fire.manager.domain.manager.PreferenceManager
+import app.fire.manager.ui.components.SegmentedButton
+import app.fire.manager.ui.screen.installer.InstallerScreen
+import app.fire.manager.ui.screen.settings.SettingsScreen
+import app.fire.manager.ui.theme.FireOrange
+import app.fire.manager.ui.theme.FireRed
+import app.fire.manager.ui.theme.FireYellow
+import app.fire.manager.ui.viewmodel.home.HomeViewModel
+import app.fire.manager.ui.widgets.AppIcon
+import app.fire.manager.ui.widgets.dialog.BatteryOptimizationDialog
+import app.fire.manager.ui.widgets.dialog.InstallOptionsDialog
+import app.fire.manager.ui.widgets.dialog.StoragePermissionsDialog
+import app.fire.manager.ui.widgets.home.CommitList
+import app.fire.manager.ui.widgets.updater.UpdateDialog
+import app.fire.manager.utils.Constants
+import app.fire.manager.utils.DiscordVersion
+import app.fire.manager.utils.glow
+import app.fire.manager.utils.navigate
+import app.fire.manager.utils.frosted
+import cafe.adriel.voyager.core.screen.Screen
+import cafe.adriel.voyager.koin.getScreenModel
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
+import org.koin.androidx.compose.get
+
+class HomeScreen : Screen {
+
+    @Composable
+    override fun Content() {
+        val navigator = LocalNavigator.currentOrThrow
+        val prefs: PreferenceManager = get()
+        val viewModel: HomeViewModel = getScreenModel()
+
+        val currentVersion = remember(viewModel.installManager.current) {
+            DiscordVersion.fromVersionCode(viewModel.installManager.current?.versionCode.toString())
+        }
+
+        val latestVersion =
+            remember(prefs.packageName, viewModel.discordVersions) {
+                when {
+                    prefs.discordVersion.isBlank() -> viewModel.discordVersions?.get(DiscordVersion.Type.STABLE)
+                    else -> DiscordVersion.fromVersionCode(prefs.discordVersion)
+                }
+            }
+
+        // == Dialogs == //
+
+        StoragePermissionsDialog()
+        BatteryOptimizationDialog()
+
+        var showInstallOptions by remember { mutableStateOf(false) }
+
+        if (showInstallOptions) {
+            InstallOptionsDialog(
+                versions = viewModel.discordVersions ?: emptyMap(),
+                defaultVersion = latestVersion ?: Constants.DUMMY_VERSION,
+                onDismiss = { showInstallOptions = false },
+                onConfirm = { pkg, name, ver, url ->
+                    showInstallOptions = false
+                    prefs.packageName = pkg
+                    prefs.setInstanceName(pkg, name)
+                    prefs.installedInstances = prefs.installedInstances + pkg
+                    val verCode = ver.toVersionCode()
+                    prefs.discordVersion = verCode
+                    prefs.setTargetVersion(pkg, verCode)
+                    if (prefs.advancedInstallOptions) {
+                        prefs.setCustomXposedUrl(pkg, url)
+                    }
+                    viewModel.installManager.getInstalled()
+                    navigator.navigate(InstallerScreen(ver))
+                }
+            )
+        }
+
+        if (
+            viewModel.showUpdateDialog &&
+            viewModel.release != null &&
+            !BuildConfig.DEBUG
+        ) {
+            var progress by remember { mutableStateOf<Float?>(null) }
+
+            UpdateDialog(
+                release = viewModel.release!!,
+                isUpdating = viewModel.isUpdating,
+                progress = progress,
+                onDismiss = { viewModel.showUpdateDialog = false },
+                onConfirm = {
+                    viewModel.downloadAndInstallUpdate { newProgress -> progress = newProgress }
+                }
+            )
+        }
+
+        // == Screen == //
+
+        Scaffold(
+            topBar = { TitleBar() },
+            containerColor = MaterialTheme.colorScheme.background
+        ) { pv ->
+            Box(modifier = Modifier.fillMaxSize()) {
+                // Fiery Background Gradient
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp)
+                        .background(
+                            brush = Brush.verticalGradient(
+                                colors = listOf(
+                                    FireRed.copy(alpha = 0.2f),
+                                    FireOrange.copy(alpha = 0.1f),
+                                    Color.Transparent
+                                )
+                            )
+                        )
+                )
+
+                LazyColumn(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.fillMaxSize(),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                        top = pv.calculateTopPadding() + 16.dp,
+                        bottom = 16.dp,
+                        start = 16.dp,
+                        end = 16.dp
+                    ),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    item {
+                        Spacer(modifier = Modifier.height(24.dp))
+                    }
+
+                    item {
+                        AppIcon(
+                            customIcon = prefs.patchIcon,
+                            releaseChannel = DiscordVersion.Type.STABLE,
+                            modifier = Modifier
+                                .size(100.dp)
+                                .glow(FireOrange, radius = 30.dp, alpha = 0.6f)
+                        )
+                    }
+
+                    item {
+                        InstanceSelector(isExperimental = prefs.experimentalUi)
+                    }
+
+                    item {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            AnimatedVisibility(visible = currentVersion != null) {
+                                Text(
+                                    text = stringResource(
+                                        R.string.version_current,
+                                        currentVersion.toString()
+                                    ),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium,
+                                    color = LocalContentColor.current.copy(alpha = 0.7f),
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+
+                            val latestLabel =
+                                if (prefs.discordVersion.isNotBlank()) R.string.version_target else R.string.version_latest
+
+                            AnimatedVisibility(visible = latestVersion != null) {
+                                Text(
+                                    text = stringResource(latestLabel, latestVersion.toString()),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = FontWeight.Medium,
+                                    color = FireOrange,
+                                    textAlign = TextAlign.Center
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Button(
+                            onClick = {
+                                showInstallOptions = true
+                            },
+                            enabled = latestVersion != null && (prefs.allowDowngrade || latestVersion >= (currentVersion ?: Constants.DUMMY_VERSION)),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(56.dp)
+                                .glow(FireRed.copy(alpha = 0.5f), radius = 10.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = MaterialTheme.colorScheme.primary
+                            )
+                        ) {
+                            val label = when {
+                                latestVersion == null -> R.string.msg_loading
+                                currentVersion == null -> R.string.action_install
+                                currentVersion == latestVersion -> R.string.action_reinstall
+                                latestVersion > currentVersion -> R.string.action_update
+                                else -> if (prefs.allowDowngrade) R.string.msg_downgrade else R.string.msg_downgrade_disallowed
+                            }
+
+                            Text(
+                                text = stringResource(label),
+                                textAlign = TextAlign.Center,
+                                fontWeight = FontWeight.ExtraBold,
+                                maxLines = 1,
+                                modifier = Modifier.basicMarquee()
+                            )
+                        }
+                    }
+
+                    item {
+                        AnimatedVisibility(visible = viewModel.installManager.current != null) {
+                            Row(
+                                horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                modifier = Modifier
+                                    .padding(top = 12.dp)
+                                    .clip(RoundedCornerShape(20.dp))
+                                    .background(MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f))
+                                    .padding(4.dp)
+                            ) {
+                                SegmentedButton(
+                                    icon = Icons.Filled.OpenInNew,
+                                    text = stringResource(R.string.action_launch),
+                                    onClick = { viewModel.launchMod() }
+                                )
+                                SegmentedButton(
+                                    icon = Icons.Filled.Info,
+                                    text = stringResource(R.string.action_info),
+                                    onClick = { viewModel.launchModInfo() }
+                                )
+                                SegmentedButton(
+                                    icon = Icons.Filled.Delete,
+                                    text = stringResource(R.string.action_uninstall),
+                                    onClick = { viewModel.uninstallMod() }
+                                )
+                            }
+                        }
+                    }
+
+                    item {
+                        Text(
+                            text = "Changelog",
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(top = 8.dp),
+                            textAlign = TextAlign.Start
+                        )
+                    }
+
+                    item {
+                        ElevatedCard(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(400.dp),
+                            shape = RoundedCornerShape(24.dp),
+                            colors = CardDefaults.elevatedCardColors(
+                                containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.9f)
+                            )
+                        ) {
+                            CommitList(
+                                commits = viewModel.commits.collectAsLazyPagingItems()
+                            )
+                        }
+                    }
+                    
+                    item {
+                        Spacer(modifier = Modifier.height(32.dp))
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    @OptIn(ExperimentalMaterial3Api::class)
+    private fun TitleBar() {
+        val navigator = LocalNavigator.currentOrThrow
+        val prefs: PreferenceManager = get()
+        val viewModel: HomeViewModel = getScreenModel()
+
+        CenterAlignedTopAppBar(
+            title = { 
+                Text(
+                    text = stringResource(R.string.app_name),
+                    fontWeight = FontWeight.Black,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+            },
+            actions = {
+                if (prefs.experimentalUi) {
+                    val p: PreferenceManager = get()
+                    Row(
+                        modifier = Modifier
+                            .padding(end = 8.dp)
+                            .clip(CircleShape)
+                            .frosted()
+                            .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp).copy(alpha = if (p.frostedGlass) 0.4f else 1f))
+                            .padding(horizontal = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        IconButton(onClick = { viewModel.getDiscordVersions() }, modifier = Modifier.size(40.dp)) {
+                            Icon(
+                                imageVector = Icons.Filled.Refresh,
+                                contentDescription = stringResource(R.string.action_reload),
+                                tint = FireOrange,
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                        IconButton(onClick = { navigator.navigate(SettingsScreen()) }, modifier = Modifier.size(40.dp)) {
+                            Icon(
+                                imageVector = Icons.Outlined.Settings,
+                                contentDescription = stringResource(R.string.action_open_about),
+                                modifier = Modifier.size(20.dp)
+                            )
+                        }
+                    }
+                } else {
+                    Actions()
+                }
+            },
+            colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
+                containerColor = if (prefs.experimentalUi) Color.Transparent else MaterialTheme.colorScheme.surface.copy(alpha = 0.8f)
+            ),
+            modifier = if (prefs.experimentalUi) Modifier else Modifier.background(
+                brush = Brush.verticalGradient(
+                    colors = listOf(
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.9f),
+                        MaterialTheme.colorScheme.surface.copy(alpha = 0.7f)
+                    )
+                )
+            )
+        )
+    }
+
+    @Composable
+    private fun InstanceSelector(isExperimental: Boolean) {
+        val prefs: PreferenceManager = get()
+        val viewModel: HomeViewModel = getScreenModel()
+        val context = LocalContext.current
+        val density = LocalDensity.current
+        var expanded by remember { mutableStateOf(false) }
+        var pillSize by remember { mutableStateOf(IntSize.Zero) }
+
+        val currentLabel = remember(prefs.packageName, prefs.installedInstances) {
+            val storedName = prefs.getInstanceName(prefs.packageName)
+            if (storedName.isNotBlank()) return@remember storedName
+
+            try {
+                context.packageManager.getApplicationLabel(
+                    context.packageManager.getApplicationInfo(prefs.packageName, 0)
+                ).toString()
+            } catch (e: Exception) {
+                BuildConfig.MOD_NAME
+            }
+        }
+
+        Box(
+            modifier = Modifier.fillMaxWidth(),
+            contentAlignment = Alignment.Center
+        ) {
+            Box(modifier = Modifier.wrapContentSize()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center,
+                    modifier = Modifier
+                        .onSizeChanged { pillSize = it }
+                        .then(
+                            if (isExperimental) {
+                                Modifier
+                                    .clip(CircleShape)
+                                    .frosted()
+                                    .background(MaterialTheme.colorScheme.surfaceColorAtElevation(4.dp).copy(alpha = if (prefs.frostedGlass) 0.4f else 1f))
+                                    .clickable { expanded = true }
+                                    .padding(horizontal = 16.dp, vertical = 8.dp)
+                            } else {
+                                Modifier
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .clickable { expanded = true }
+                                    .padding(horizontal = 12.dp, vertical = 8.dp)
+                            }
+                        )
+                ) {
+                    Text(
+                        text = currentLabel,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = if (isExperimental) 0.sp else 1.sp,
+                        style = if (isExperimental) MaterialTheme.typography.titleMedium 
+                                else MaterialTheme.typography.headlineMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Icon(
+                        imageVector = Icons.Filled.ArrowDropDown,
+                        contentDescription = null,
+                        tint = FireOrange,
+                        modifier = Modifier.size(if (isExperimental) 20.dp else 24.dp)
+                    )
+                }
+
+                DropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false },
+                    modifier = Modifier
+                        .width(with(density) { pillSize.width.toDp() })
+                        .background(MaterialTheme.colorScheme.surface)
+                        .then(
+                            if (isExperimental) {
+                                Modifier.clip(RoundedCornerShape(24.dp))
+                            } else Modifier
+                        )
+                ) {
+                    prefs.installedInstances.toList().sorted().forEach { pkg ->
+                        val label = remember(pkg) {
+                            val storedName = prefs.getInstanceName(pkg)
+                            if (storedName.isNotBlank()) return@remember storedName
+
+                            try {
+                                context.packageManager.getApplicationLabel(
+                                    context.packageManager.getApplicationInfo(pkg, 0)
+                                ).toString()
+                            } catch (e: Exception) {
+                                if (pkg == BuildConfig.MODDED_APP_PACKAGE_NAME) BuildConfig.MOD_NAME
+                                else pkg.split(".").last().replaceFirstChar { it.uppercase() }
+                            }
+                        }
+                        DropdownMenuItem(
+                            text = { 
+                                Text(
+                                    text = label,
+                                    fontWeight = if (prefs.packageName == pkg) FontWeight.Bold else FontWeight.Normal,
+                                    style = MaterialTheme.typography.bodyMedium
+                                ) 
+                            },
+                            onClick = {
+                                expanded = false
+                                prefs.packageName = pkg
+                                prefs.discordVersion = prefs.getTargetVersion(pkg)
+                                viewModel.installManager.getInstalled()
+                            },
+                            leadingIcon = {
+                                if (prefs.packageName == pkg) {
+                                    Icon(
+                                        imageVector = Icons.Filled.Check,
+                                        contentDescription = null,
+                                        tint = FireOrange,
+                                        modifier = Modifier.size(18.dp)
+                                    )
+                                }
+                            }
+                        )
+                    }
+                }
+            }
+        }
+    }
+
+    @Composable
+    private fun Actions() {
+        val viewModel: HomeViewModel = getScreenModel()
+        val navigator = LocalNavigator.currentOrThrow
+
+        IconButton(onClick = { viewModel.getDiscordVersions() }) {
+            Icon(
+                imageVector = Icons.Filled.Refresh,
+                contentDescription = stringResource(R.string.action_reload),
+                tint = FireOrange
+            )
+        }
+        IconButton(onClick = { navigator.navigate(SettingsScreen()) }) {
+            Icon(
+                imageVector = Icons.Outlined.Settings,
+                contentDescription = stringResource(R.string.action_open_about)
+            )
+        }
+    }
+
+}
