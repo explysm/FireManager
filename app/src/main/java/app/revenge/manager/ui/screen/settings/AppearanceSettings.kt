@@ -1,7 +1,6 @@
 package app.revenge.manager.ui.screen.settings
 
 import android.os.Build
-import android.os.Build
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
